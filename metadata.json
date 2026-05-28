@@ -1,0 +1,6 @@
+{
+  "name": "Operation: Stolen Case",
+  "description": "An immersive Cozy Cyber-Noir agency focus tracker, case investigation board, and AI intelligence briefing assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

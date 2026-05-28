@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable, hardened helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Matches for the User Profiles collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && request.resource.data.keys().hasAll(['uid', 'email', 'energy', 'credits', 'xp'])
+                    && request.resource.data.keys().size() == 5
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.email is string
+                    && request.resource.data.energy is int
+                    && request.resource.data.credits is int
+                    && request.resource.data.xp is int;
+      allow update: if isOwner(userId)
+                    && request.resource.data.uid == userId
+                    && request.resource.data.email == resource.data.email
+                    && request.resource.data.energy is int
+                    && request.resource.data.credits is int
+                    && request.resource.data.xp is int
+                    && request.resource.data.diff(resource.data).affectedKeys().hasAny(['energy', 'credits', 'xp', 'updatedAt']);
+    }
+
+    // Matches nested collections under users
+    match /users/{userId}/habits/{habitId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && isValidId(habitId)
+                    && request.resource.data.keys().hasAll(['id', 'userId', 'title', 'type', 'completed', 'currentValue', 'energyReward'])
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.id == habitId
+                    && request.resource.data.title is string
+                    && request.resource.data.type is string
+                    && request.resource.data.completed is bool;
+      allow update: if isOwner(userId)
+                    && request.resource.data.userId == userId
+                    && request.resource.data.id == habitId
+                    && request.resource.data.type == resource.data.type
+                    && request.resource.data.diff(resource.data).affectedKeys().hasAny(['completed', 'currentValue', 'updatedAt']);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/investigations/{investigationId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && isValidId(investigationId)
+                    && request.resource.data.keys().hasAll(['id', 'userId', 'markerId', 'searchedCount', 'maxCount'])
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.id == investigationId
+                    && request.resource.data.markerId is string
+                    && request.resource.data.searchedCount is int
+                    && request.resource.data.maxCount is int;
+      allow update: if isOwner(userId)
+                    && request.resource.data.userId == userId
+                    && request.resource.data.id == investigationId
+                    && request.resource.data.markerId == resource.data.markerId
+                    && request.resource.data.diff(resource.data).affectedKeys().hasAny(['searchedCount', 'updatedAt']);
+    }
+
+    match /users/{userId}/purchases/{purchaseId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && isValidId(purchaseId)
+                    && request.resource.data.keys().hasAll(['id', 'userId', 'itemId'])
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.id == purchaseId
+                    && request.resource.data.itemId is string;
+      allow update, delete: if false; // System generated records of store purchases are immutable once finished
+    }
+
+    match /users/{userId}/chat_messages/{messageId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && isValidId(messageId)
+                    && request.resource.data.keys().hasAll(['id', 'userId', 'sender', 'content', 'createdAt'])
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.id == messageId
+                    && request.resource.data.sender is string
+                    && request.resource.data.content is string;
+      allow update: if isOwner(userId)
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating']); // Can only rate response
+      allow delete: if isOwner(userId);
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "Represents the active intelligence agent profile state",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique user identifier from Firebase Auth" },
+        "email": { "type": "string", "description": "The email of the agent" },
+        "displayName": { "type": "string", "description": "The custom agent codename or name" },
+        "energy": { "type": "integer", "description": "Current agent energy (max 100)" },
+        "credits": { "type": "integer", "description": "Current available credits (CR)" },
+        "xp": { "type": "integer", "description": "Current agent experience points (XP)" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "ISO timestamp of last update" }
+      },
+      "required": ["uid", "email", "energy", "credits", "xp"]
+    },
+    "habits": {
+      "title": "Agent Habit Tracker",
+      "description": "Daily protocols and tactical habits of the agent",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the habit" },
+        "userId": { "type": "string", "description": "Owner identifier reference" },
+        "title": { "type": "string", "description": "Habit description or title" },
+        "type": { "type": "string", "enum": ["sleep", "exercise", "intelligence", "precision", "mood"], "description": "Operational sector tag" },
+        "completed": { "type": "boolean", "description": "Whether is completed for today" },
+        "currentValue": { "type": "string", "description": "The current metric string (e.g. 7h 42m, 21 / 30 mins, etc)" },
+        "energyReward": { "type": "integer", "description": "Rewarded energy upon completion" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of the last record change" }
+      },
+      "required": ["id", "userId", "title", "type", "completed"]
+    },
+    "investigations": {
+      "title": "Evidence Board Investigation Progress",
+      "description": "Progress of searching the desk/room markers for clues",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID: userId + markerId" },
+        "userId": { "type": "string", "description": "Identifier of the agent" },
+        "markerId": { "type": "string", "enum": ["light_fixture", "server_rack", "keyboard", "document", "drawer"], "description": "Case marker identifier" },
+        "searchedCount": { "type": "integer", "description": "Amount searched so far" },
+        "maxCount": { "type": "integer", "description": "The maximum count to complete search of this marker" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last search timestamp" }
+      },
+      "required": ["id", "userId", "markerId", "searchedCount", "maxCount"]
+    },
+    "purchases": {
+      "title": "Agency Acquisitions Store",
+      "description": "Items purchased by the user in the shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID: userId + itemId" },
+        "userId": { "type": "string", "description": "Owner identifier of the buyer" },
+        "itemId": { "type": "string", "description": "The unique item identifier in the agency shop list" },
+        "purchasedAt": { "type": "string", "format": "date-time", "description": "Transaction completion timestamp" }
+      },
+      "required": ["id", "userId", "itemId"]
+    },
+    "chat_messages": {
+      "title": "Briefing Logs",
+      "description": "Secure transcripts with the AI Dream Interpreter & Intelligence Briefing Assistant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID for the dialogue bubble" },
+        "userId": { "type": "string", "description": "Agent user identity reference" },
+        "sender": { "type": "string", "enum": ["user", "ai"], "description": "Sender label" },
+        "content": { "type": "string", "description": "Text body of the transmission" },
+        "rating": { "type": "integer", "description": "Numeric rating for AI insight quality (0-5 stars)" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Clock time of message production" }
+      },
+      "required": ["id", "userId", "sender", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "Storage of the personalized, authenticated agent states"
+    },
+    "/users/{userId}/habits/{habitId}": {
+      "schema": "habits",
+      "description": "Storage of user daily checklists and completed actions"
+    },
+    "/users/{userId}/investigations/{investigationId}": {
+      "schema": "investigations",
+      "description": "State tracking for desk search actions"
+    },
+    "/users/{userId}/purchases/{purchaseId}": {
+      "schema": "purchases",
+      "description": "Owned inventory items from the shop"
+    },
+    "/users/{userId}/chat_messages/{messageId}": {
+      "schema": "chat_messages",
+      "description": "Historic dialogue briefings logged securely"
+    }
+  }
+}
