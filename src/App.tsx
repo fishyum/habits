@@ -307,6 +307,116 @@ export default function App() {
     return saved ? parseInt(saved) : 10;
   });
 
+  // --- Rivalry Gameplay Mechanic ---
+  const [playerProgress, setPlayerProgress] = useState<number>(() => {
+    const saved = localStorage.getItem("agent_rivalry_player_progress");
+    return saved ? Math.min(100, Math.max(0, parseInt(saved, 10))) : 0;
+  });
+
+  const [rivalProgress, setRivalProgress] = useState<number>(() => {
+    const saved = localStorage.getItem("agent_rivalry_rival_progress");
+    return saved ? Math.min(100, Math.max(0, parseInt(saved, 10))) : 15;
+  });
+
+  const [flashPlayerChange, setFlashPlayerChange] = useState<boolean>(false);
+  const [flashRivalChange, setFlashRivalChange] = useState<boolean>(false);
+  const [isCaseSolvedOpen, setIsCaseSolvedOpen] = useState<boolean>(false);
+  const [isCaseStolenOpen, setIsCaseStolenOpen] = useState<boolean>(false);
+
+  const modifyRivalryProgress = (playerDelta: number, rivalDelta: number, reason?: string) => {
+    setPlayerProgress((prevP) => {
+      let nextP = Math.min(100, Math.max(0, prevP + playerDelta));
+      if (playerDelta !== 0) {
+        setFlashPlayerChange(true);
+        setTimeout(() => setFlashPlayerChange(false), 900);
+      }
+      
+      setRivalProgress((prevR) => {
+        let nextR = Math.min(100, Math.max(0, prevR + rivalDelta));
+        if (rivalDelta !== 0) {
+          setFlashRivalChange(true);
+          setTimeout(() => setFlashRivalChange(false), 900);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem("agent_rivalry_player_progress", nextP.toString());
+        localStorage.setItem("agent_rivalry_rival_progress", nextR.toString());
+
+        // Check Win/Lose conditions
+        if (nextP >= 100 && prevP < 100 && !isCaseSolvedOpen && !isCaseStolenOpen) {
+          setIsCaseSolvedOpen(true);
+          playSynthSound("complete");
+        } else if (nextR >= 100 && prevR < 100 && !isCaseSolvedOpen && !isCaseStolenOpen) {
+          setIsCaseStolenOpen(true);
+          playSynthSound("alarm");
+        }
+
+        return nextR;
+      });
+
+      return nextP;
+    });
+
+    if (reason && (playerDelta !== 0 || rivalDelta !== 0)) {
+      if (playerDelta > 0 || rivalDelta < 0) {
+        addToast(`🔵 CASE ADVANCED: ${reason} (PLAYER: +${playerDelta}% / RIVAL: ${rivalDelta >= 0 ? "+" : ""}${rivalDelta}%)`, "success");
+      } else {
+        addToast(`🔴 THREAT ESCALATED: ${reason} (PLAYER: ${playerDelta >= 0 ? "+" : ""}${playerDelta}% / RIVAL: +${rivalDelta}%)`, "warn");
+      }
+    }
+  };
+
+  const restartCurrentLevel = () => {
+    playSynthSound("complete");
+    setInvestigations((prev) => {
+      const updated = { ...prev };
+      if (investigationLevel === 1) {
+        updated.light_fixture = 0;
+        updated.server_rack = 0;
+        updated.keyboard = 0;
+        updated.document = 0;
+        updated.drawer = 0;
+      } else if (investigationLevel === 2) {
+        updated.lvl2_typewriter = 0;
+        updated.lvl2_lantern = 0;
+        updated.lvl2_window = 0;
+        updated.lvl2_fireplace = 0;
+        updated.lvl2_chest = 0;
+      } else {
+        updated.lvl3_mainframe = 0;
+        updated.lvl3_terminal = 0;
+        updated.lvl3_console = 0;
+        updated.lvl3_datadrive = 0;
+        updated.lvl3_monitor = 0;
+        updated.lvl3_firewall = 0;
+        updated.lvl3_crate = 0;
+      }
+      return updated;
+    });
+    setThreatLevel(15);
+    setPlayerProgress(0);
+    setRivalProgress(15);
+    localStorage.setItem("agent_rivalry_player_progress", "0");
+    localStorage.setItem("agent_rivalry_rival_progress", "15");
+    setIsCaseStolenOpen(false);
+    addToast("🔄 Level reset successfully. Case parameters re-initialized!", "success");
+  };
+
+  const getRivalrySubtitleValue = () => {
+    const diff = playerProgress - rivalProgress;
+    if (diff > 15) {
+      return "INVESTIGATION ADVANTAGE";
+    } else if (diff > 0) {
+      return `CASE CONTROL: +${diff}%`;
+    } else if (diff === 0) {
+      return "COMPETITIVE DETECTIVE PACING";
+    } else if (diff < -15) {
+      return "THREAT INCREASING";
+    } else {
+      return "RIVAL FALLING BEHIND";
+    }
+  };
+
   // Protected Hours firewall states
   const [protectedHoursEnabled, setProtectedHoursEnabled] = useState<boolean>(() => {
     return localStorage.getItem("agent_protected_hours_enabled") === "true";
@@ -1112,6 +1222,7 @@ export default function App() {
       return updated;
     });
 
+    modifyRivalryProgress(-10, 15, "Encounter Defeat - Syndicate Intruder Escaped");
     addToast(`❌ COMBAT RETREAT: Investigation Compromised! Threat Level spiked (+${threatGained}%) & Telemetry data corrupted!`, "warn");
     setActiveEncounter(null);
     setLastProgressTime(Date.now()); // Reset inactivity stopwatch
@@ -1144,6 +1255,13 @@ export default function App() {
     setCredits(nextCr);
     setXp(nextXp);
     setThreatLevel(nextThreat);
+
+    // Call dynamic progress updater on defeating enemies (reduces rival, increases player)
+    modifyRivalryProgress(
+      isBoss ? 20 : 10,
+      isBoss ? -25 : -15,
+      `Hostile Agent Neutralized: ${encounter.name}`
+    );
 
     addToast(`🏆 CYBER INTERACTION DEACTIVATED! Defeated ${encounter.name}`, "success");
     addToast(`Rewards: +${rewardCr} Credits // +${rewardXp} XP (Rank Progression) // -${rewardThreat}% Threat Level!`, "credits");
@@ -1205,11 +1323,24 @@ export default function App() {
   // Real-time ticking threat countdown and enemy arrival loop
   useEffect(() => {
     // 1. Tick currentTime every second
+    let tickerCount = 0;
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
+      tickerCount++;
+
+      // Check if hostiles are active
+      const hasHostiles = activeEncounter || arrivingEnemy || Object.values(activeSabotages).some(Boolean);
+      if (hasHostiles && tickerCount % 6 === 0) {
+        modifyRivalryProgress(0, 1, "Hostile Sabotage Active - Rival Gains Edge");
+      }
+
+      // Check if Threat Level is high
+      if (threatLevel >= 60 && tickerCount % 12 === 0) {
+        modifyRivalryProgress(0, 1, "Security Faults Active - Rival Intercepting Data");
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeEncounter, arrivingEnemy, activeSabotages, threatLevel]);
 
   // Monitor for expired threat countdown timers to trigger arrival interruption
   useEffect(() => {
@@ -1252,6 +1383,7 @@ export default function App() {
 
       // Apply immediate progress theft when Agent Pur arrives!
       if (arrivingEnemy.enemyId === "agent_pur") {
+        modifyRivalryProgress(-4, 10, "Agent Pur Deployed Progress Theft!");
         setInvestigations((prev) => {
           const keys = Object.keys(prev) as MarkerId[];
           const updated = { ...prev };
@@ -1273,8 +1405,17 @@ export default function App() {
         });
       }
 
+      if (arrivingEnemy.enemyId === "beak_storm") {
+        modifyRivalryProgress(0, 10, "Beak Storm Deployed - Encryption Pacing Disrupted");
+      }
+
+      if (arrivingEnemy.enemyId === "mr_mustela") {
+        modifyRivalryProgress(0, 12, "Mr. Mustela Deployed - Data Obstructed and Locked");
+      }
+
       // Apply Poison Fang heavy corruption upon arrival:
       if (arrivingEnemy.enemyId === "poison_fang") {
+        modifyRivalryProgress(-8, 18, "Poison Fang Corrupted Evidence Grid!");
         setThreatLevel((t) => Math.min(100, t + 45));
         setInvestigations((prev) => {
           const keys = Object.keys(prev) as MarkerId[];
@@ -1331,6 +1472,7 @@ export default function App() {
           if (sinceLastTap > 1.8) {
             spawnDamageText("💥 CLUE CORRUPTION!");
             setThreatLevel((t) => Math.min(100, t + 5));
+            modifyRivalryProgress(0, 3, "Poison Fang Corrupted Case Clues");
             nextTime = Math.max(0, nextTime - 3); // 3 seconds penalty
             playSynthSound("alarm");
             addToast(`🚨 COBRA INTERFERENCE: Poison Fang corrupted clues! +5% Threat Level & -3s Limit! Continuous focus required!`, "warn");
@@ -1457,6 +1599,7 @@ export default function App() {
     registerProgress(); // Reset inactivity timer on progress
     
     if (activeSabotages.mr_mustela) {
+      modifyRivalryProgress(0, 3, "Evidence Lock Access Denied - Mr. Mustela Locked Interface");
       addToast("⚠️ Lock icon active. EVIDENCE ACCESS DENIED: OBJECT LOCKED BY MR. MUSTELA 🦦", "warn");
       playSynthSound("alarm");
       return;
@@ -1512,6 +1655,12 @@ export default function App() {
 
     const nextXp = Math.max(0, xp - 5);
     setXp(nextXp);
+
+    const currentCountSec = investigations[marker] || 0;
+    const nextCountSec = Math.min(dynamicAmountNeeded, currentCountSec + 1);
+    const freshlyCompletedSec = nextCountSec >= dynamicAmountNeeded;
+    const playerProgressDelta = freshlyCompletedSec ? 8 : 3;
+    modifyRivalryProgress(playerProgressDelta, 0, freshlyCompletedSec ? `Evidence Object "${getHumanLabel(marker)}" Completed!` : `Discovered case clue fragment`);
 
     if (activeSabotages.beak_storm) {
       addToast("⚠️ BEAK STORM REINFORCED SECURITY: tap counter flashes red! Required taps increased (+2)!", "warn");
@@ -1668,6 +1817,11 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem("agent_investigation_level", investigationLevel.toString());
+    const baseProgress = getOverallInvestigationProgress();
+    setPlayerProgress(baseProgress);
+    setRivalProgress(15);
+    localStorage.setItem("agent_rivalry_player_progress", baseProgress.toString());
+    localStorage.setItem("agent_rivalry_rival_progress", "15");
   }, [investigationLevel]);
 
   const isLevel1Complete = () => {
@@ -2253,20 +2407,37 @@ export default function App() {
                 </section>
 
                 {/* Tactical Case Progress vs Rival bar */}
-                <section className="space-y-2 bg-[#111111] p-4 rounded-2xl border border-white/5">
-                  <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                    <span className="text-blue-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
-                      YOU {62}%
+                <section className="space-y-2 bg-[#111111] p-4 rounded-2xl border border-white/5 relative overflow-hidden">
+                  <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest text-gray-400">
+                    <span className={`text-blue-400 flex items-center gap-1.5 transition-all duration-300 ${flashPlayerChange ? "scale-105 text-white brightness-150 font-black" : ""}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping inline-block"></span>
+                      YOU {playerProgress}%
                     </span>
-                    <span className="text-red-500 tracking-widest text-right font-extrabold">RIVAL {38}%</span>
+                    <span className={`text-red-500 tracking-widest text-right font-black transition-all duration-300 ${flashRivalChange ? "scale-105 text-red-300 animate-pulse bg-red-950/40 px-1 rounded inline-block" : ""}`}>
+                      RIVAL {rivalProgress}%
+                    </span>
                   </div>
-                  <div className="h-2 bg-black rounded-full overflow-hidden flex p-[1px] border border-white/5 shadow-inner">
-                    <div className="h-full bg-gradient-to-r from-blue-450 to-blue-600 rounded-full progress-glow" style={{ width: "62%" }}></div>
-                    <div className="h-full bg-gradient-to-l from-red-600 to-[#4c1111] opacity-75 rounded-full" style={{ width: "38%" }}></div>
+                  <div className="h-3 bg-black rounded-full overflow-hidden flex p-[1.5px] border border-white/5 shadow-inner relative">
+                    {/* Player bar */}
+                    <div 
+                      className={`h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-700 ease-out relative shadow-[0_0_12px_rgba(59,130,246,0.6)] ${flashPlayerChange ? "brightness-125" : ""}`} 
+                      style={{ width: `${playerProgress}%` }}
+                    >
+                      {/* Tactical pulse lines inside player bar */}
+                      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_45%,rgba(255,255,255,0.4)_50%,transparent_55%)] bg-[size:200%_100%] animate-[shimmer_2s_infinite]"></div>
+                    </div>
+                    {/* Rival bar */}
+                    <div 
+                      className={`h-full bg-gradient-to-l from-red-600 to-[#7f1d1d] opacity-90 rounded-full transition-all duration-700 ease-out relative ${flashRivalChange ? "animate-pulse brightness-150 border-r border-red-400" : ""}`} 
+                      style={{ width: `${rivalProgress}%` }}
+                    >
+                      {/* Glitch lines inside rival bar */}
+                      <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#000,#000_2px,transparent_2px,transparent_6px)]"></div>
+                    </div>
                   </div>
-                  <p className="text-center font-mono text-[9px] text-gray-500 lowercase tracking-tight italic">
-                    infiltration delta: +24% lead edge coordinates saved
+                  <p className="text-center font-mono text-[9px] text-gray-500 lowercase tracking-widest font-extrabold flex items-center justify-center gap-1.5">
+                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${playerProgress >= rivalProgress ? "bg-blue-400 animate-pulse" : "bg-red-500 animate-ping"}`}></span>
+                    {getRivalrySubtitleValue()}
                   </p>
                 </section>
 
@@ -3328,12 +3499,12 @@ export default function App() {
                           {/* Player vs Rival bar */}
                           <div className="space-y-1 pt-1.5 border-t border-zinc-900/60">
                             <div className="flex justify-between text-[8px] font-bold tracking-wider leading-none">
-                              <span className="text-cyan-400 uppercase">AGENT CONTROL ({getOverallInvestigationProgress()}%)</span>
-                              <span className="text-red-500 uppercase">RIVAL INTRUDER ({Math.min(95, Math.max(12, Math.floor(getOverallInvestigationProgress() * 0.7) + 15))}% ACCESS)</span>
+                              <span className="text-cyan-400 uppercase">AGENT CONTROL ({playerProgress}%)</span>
+                              <span className="text-red-500 uppercase">RIVAL INTRUDER ({rivalProgress}% ACCESS)</span>
                             </div>
                             <div className="h-1.5 w-full bg-zinc-950 rounded-full overflow-hidden flex">
-                              <div className="bg-cyan-400 h-full transition-all" style={{ width: `${getOverallInvestigationProgress()}%` }}></div>
-                              <div className="bg-red-500/80 h-full transition-all" style={{ width: `${Math.min(95, Math.max(12, Math.floor(getOverallInvestigationProgress() * 0.7) + 15))}%` }}></div>
+                              <div className="bg-cyan-400 h-full transition-all" style={{ width: `${playerProgress}%` }}></div>
+                              <div className="bg-red-500/80 h-full transition-all" style={{ width: `${rivalProgress}%` }}></div>
                             </div>
                           </div>
                         </div>
@@ -4936,6 +5107,170 @@ export default function App() {
 
                   <p className="text-[7.5px] font-mono text-zinc-500 uppercase tracking-widest">
                     Authorized Terminal Protocol
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* CASE RESOLVED / VICTORY OVERLAY */}
+        <AnimatePresence>
+          {isCaseSolvedOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/95 backdrop-blur-lg z-50 flex items-center justify-center p-4 select-none"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 30 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 30 }}
+                className="w-full max-w-sm bg-[#020d1c] border-2 border-[#10b981] rounded-2xl p-6 relative overflow-hidden text-center shadow-[0_0_50px_rgba(16,185,129,0.25)]"
+              >
+                {/* Visual tech styling backdrops */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-[#10b981] opacity-75"></div>
+
+                <div className="space-y-5 relative z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981] shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                    <ShieldCheck size={32} className="animate-pulse" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="font-headline text-xl font-black text-[#10b981] tracking-[0.1em] uppercase">
+                      CASE SECURED
+                    </h2>
+                    <p className="font-mono text-[9px] tracking-widest text-[#10b981]/60 uppercase">
+                      COGNITIVE GRID CLEAR / PLAYER ADVANTAGE
+                    </p>
+                  </div>
+
+                  <div className="bg-[#05162a] border border-[#10b981]/15 rounded-xl p-4 text-left space-y-2.5 font-mono text-[11px]">
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>INVESTIGATION STATUS</span>
+                      <span className="text-[#10b981] font-bold">100% COMPLETE</span>
+                    </div>
+                    <div className="h-[1px] bg-zinc-900/40"></div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>RIVAL ACCESS PROGRESS</span>
+                      <span className="text-red-500 font-bold">{rivalProgress}%</span>
+                    </div>
+                    <div className="h-[1px] bg-zinc-900/40"></div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>CREDITS EARNED</span>
+                      <span className="text-yellow-400 font-bold">+250 CR</span>
+                    </div>
+                    <div className="h-[1px] bg-zinc-900/40"></div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>COGNITIVE REWARD</span>
+                      <span className="text-indigo-400 font-bold">+50 XP</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      playSynthSound("complete");
+                      setCredits((c) => c + 250);
+                      setXp((x) => x + 50);
+                      
+                      // Turn advances or level ups
+                      if (investigationLevel === 1) {
+                        setDefeatedLvl1Boss(true);
+                        setInvestigationLevel(2);
+                        addToast("🔓 Level 2 unlocked! Advancing investigation...", "success");
+                      } else if (investigationLevel === 2) {
+                        setDefeatedLvl2Boss(true);
+                        setInvestigationLevel(3);
+                        addToast("🔓 Level 3 unlocked! Advancing final investigations...", "success");
+                      } else {
+                        setDefeatedFinalBoss(true);
+                        addToast("🏆 CONGRATULATIONS! ALL GRID CASE INVESTIGATIONS FULLY SOLVED!", "success");
+                      }
+                      
+                      // Reset rivalry state parameters for the next active level
+                      setPlayerProgress(0);
+                      setRivalProgress(15);
+                      localStorage.setItem("agent_rivalry_player_progress", "0");
+                      localStorage.setItem("agent_rivalry_rival_progress", "15");
+                      setIsCaseSolvedOpen(false);
+                    }}
+                    className="w-full bg-[#10b981] hover:bg-[#059669] text-black font-mono font-black text-xs uppercase tracking-widest py-3 rounded-xl active:scale-95 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                  >
+                    ADVANCE INVESTIGATION
+                  </button>
+
+                  <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest text-center">
+                    CLASSIFIED LEVEL CLEARANCE PERMITTED
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* CASE STOLEN / DEFEAT OVERLAY */}
+        <AnimatePresence>
+          {isCaseStolenOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/95 backdrop-blur-lg z-50 flex items-center justify-center p-4 select-none"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 30 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 30 }}
+                className="w-full max-w-sm bg-[#160303] border-2 border-[#ef4444] rounded-2xl p-6 relative overflow-hidden text-center shadow-[0_0_50px_rgba(239,68,68,0.3)]"
+              >
+                {/* Visual tech styling backdrops */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-[#ef4444] opacity-75"></div>
+
+                <div className="space-y-5 relative z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] shadow-[0_0_20px_rgba(239,68,68,0.25)]">
+                    <ShieldAlert size={32} className="animate-bounce" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="font-headline text-xl font-black text-[#ef4444] tracking-[0.1em] uppercase">
+                      CASE COMPROMISED
+                    </h2>
+                    <p className="font-mono text-[9px] tracking-widest text-[#ef4444]/60 uppercase">
+                      GRID HIJACK / RIVAL SECURED OVERRIDE
+                    </p>
+                  </div>
+
+                  <div className="bg-[#240a0a] border border-[#ef4444]/15 rounded-xl p-4 text-left space-y-2.5 font-mono text-[11px]">
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>RIVAL CONTROL STATUS</span>
+                      <span className="text-[#ef4444] font-bold">100% HIJACKED</span>
+                    </div>
+                    <div className="h-[1px] bg-zinc-900/40"></div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>PLAYER INVESTIGATION PROGRESS</span>
+                      <span className="text-blue-400 font-bold">{playerProgress}%</span>
+                    </div>
+                    <div className="h-[1px] bg-zinc-900/40"></div>
+                    <div className="flex justify-between items-center text-zinc-400">
+                      <span>SYSTEM PENALTY</span>
+                      <span className="text-yellow-500 font-bold">GRID BACKUP RECOVERY REQUIRED</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      restartCurrentLevel();
+                    }}
+                    className="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white font-mono font-black text-xs uppercase tracking-widest py-3 rounded-xl active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                  >
+                    🔄 RE-INITIALIZE CASE PARAMETERS
+                  </button>
+
+                  <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest text-center">
+                    SECURITY GRID BACKUP PROTOCOLS ENGAGED
                   </p>
                 </div>
               </motion.div>
