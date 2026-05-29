@@ -1932,47 +1932,47 @@ export default function App() {
   // -----------------------------------------------------
   const initialShopItems: ShopItem[] = [
     // 1. COATS & OUTFITS
-    { id: "item_trenchcoat", title: "Shadow Infiltrator", cost: 120, description: "Stealth active-camouflage cloak", category: "coats", locked: false },
-    { id: "item_cloak", title: "Bloodroot Cloak", cost: 150, description: "Heavy thermal shield shroud", category: "coats", locked: false },
-    { id: "item_recon", title: "Night Ops Tactical Suit", cost: 130, description: "Covert climbing armored suit", category: "coats", locked: false },
-    { id: "item_vest", title: "Field Detective Coat", cost: 100, description: "Classic wool vest and micro-wire", category: "coats", locked: false },
-    { id: "item_neon", title: "Neon Grid Jacket", cost: 140, description: "Active cyber forensic tracker matrix", category: "coats", locked: false },
-    { id: "item_arctic", title: "Arctic Agent Coat", cost: 130, description: "Tundra sub-zero heavy insulation", category: "coats", locked: false },
+    { id: "item_trenchcoat", title: "Shadow Infiltrator", cost: 120, description: "Stealth active-camouflage cloak. +Tactical sync bonus.", category: "coats", locked: false },
+    { id: "item_cloak", title: "Bloodroot Cloak", cost: 150, description: "Heavy thermal shield crimson shroud. Enhanced armor weave.", category: "coats", locked: false },
+    { id: "item_recon", title: "Night Ops Tactical Suit", cost: 130, description: "Covert carbon nanosuit padding. Specialized for climbing.", category: "coats", locked: false },
+    { id: "item_vest", title: "Field Detective Coat", cost: 100, description: "Classic wool vest and micro-wire tracking receiver.", category: "coats", locked: false },
+    { id: "item_neon", title: "Neon Grid Jacket", cost: 140, description: "High-visibility cyberpunk infiltration coat. Tracker active.", category: "coats", locked: false },
+    { id: "item_arctic", title: "Arctic Agent Coat", cost: 130, description: "Tundra sub-zero heavy insulation with thermal shields.", category: "coats", locked: false },
 
     // 2. GOGGLES & FACE ACCESSORIES
-    { id: "item_goggles", title: "Thermal Scopes", cost: 80, description: "Infrared heatwave sector scanner", category: "goggles", locked: false },
-    { id: "item_visor", title: "Gold-Rim Spy Visor", cost: 80, description: "Polarized drone scanner HUD", category: "goggles", locked: false },
-    { id: "item_lens", title: "Cracked Prototype Lens", cost: 70, description: "Light-leaker security confusion optics", category: "goggles", locked: false },
-    { id: "item_hacker", title: "Dual-Lens Hacker Goggles", cost: 80, description: "Direct terminal file filters", category: "goggles", locked: false },
-    { id: "item_mask", title: "Phantom Mask", cost: 70, description: "Anti-biometric scanning scrambler", category: "goggles", locked: false },
-    { id: "item_collar", title: "Voice Scrambler Collar", cost: 60, description: "Vocal frequency modulator belt", category: "goggles", locked: false },
+    { id: "item_goggles", title: "Thermal Scopes", cost: 80, description: "Enhanced optic visor for clue detection. Infrared sensor.", category: "goggles", locked: false },
+    { id: "item_visor", title: "Gold-Rim Spy Visor", cost: 80, description: "Polarized luxury target scanner HUD and drone connector.", category: "goggles", locked: false },
+    { id: "item_lens", title: "Cracked Prototype Lens", cost: 70, description: "Repurposed hacker glass. Glitch security override matrix.", category: "goggles", locked: false },
+    { id: "item_hacker", title: "Dual-Lens Hacker Goggles", cost: 80, description: "Direct terminal feed analyzer. Parallel digital sweeps.", category: "goggles", locked: false },
+    { id: "item_mask", title: "Phantom Mask", cost: 70, description: "Anti-biometric scanning scrambler. Faceshield projection.", category: "goggles", locked: false },
+    { id: "item_collar", title: "Voice Scrambler Collar", cost: 60, description: "Vocal frequency modulator. Secure channel communications.", category: "goggles", locked: false },
 
     // 3. TAIL UPGRADES
-    { id: "item_antenna", title: "Shock Tail Antenna", cost: 90, description: "Conductive server charge disperser", category: "tails", locked: false },
-    { id: "item_hook", title: "Magnetic Hook Tail", cost: 90, description: "Silent structural grapple hook", category: "tails", locked: false },
-    { id: "item_jammer", title: "Signal Jammer Tail", cost: 80, description: "Tracker beacon signal scrambler", category: "tails", locked: false },
-    { id: "item_grapple", title: "Plasma Grapple", cost: 100, description: "Rapid vertical plasma traction anchor", category: "tails", locked: false },
-    { id: "item_claw", title: "Triple-Claw Tail", cost: 110, description: "Robotic high-speed lockpick helper", category: "tails", locked: false },
+    { id: "item_antenna", title: "Shock Tail Antenna", cost: 90, description: "Signal disruption tail upgrade. Charge discharge link.", category: "tails", locked: false },
+    { id: "item_hook", title: "Magnetic Hook Tail", cost: 90, description: "Silent structural grapple claw. Ultra-range leverage.", category: "tails", locked: false },
+    { id: "item_jammer", title: "Signal Jammer Tail", cost: 80, description: "Portable tactical beacon scrambler. Dampens field radars.", category: "tails", locked: false },
+    { id: "item_grapple", title: "Plasma Grapple", cost: 100, description: "High energy vertical plasma anchor strap. Quick traction.", category: "tails", locked: false },
+    { id: "item_claw", title: "Triple-Claw Tail", cost: 110, description: "Semiautonomous micro-lockpicker subassembly helper.", category: "tails", locked: false },
 
     // 4. HATS
-    { id: "item_fedora", title: "Noir Fedora", cost: 60, description: "Classic brimmed halogen shade", category: "hats", locked: false },
-    { id: "item_beret", title: "Tactical Beret", cost: 60, description: "Wool military clearance cap", category: "hats", locked: false },
-    { id: "item_hoodcap", title: "Hood + Cap Combo", cost: 60, description: "Stealth camera detector cover", category: "hats", locked: false },
-    { id: "item_cyberhat", title: "Cyber Detective Hat", cost: 70, description: "Signal parsing sensor deerstalker", category: "hats", locked: false },
-    { id: "item_headset", title: "Signal Officer Headset", cost: 60, description: "High-gain wave bypass receiver", category: "hats", locked: false },
-    { id: "item_crown", title: "Broken Crown Helmet", cost: 80, description: "Mainframe mastery cracked helm", category: "hats", locked: false },
+    { id: "item_fedora", title: "Noir Fedora", cost: 60, description: "Classic reinforced halogen brim felt shade hat.", category: "hats", locked: false },
+    { id: "item_beret", title: "Tactical Beret", cost: 60, description: "Elite agent wool beret. Special operations certification.", category: "hats", locked: false },
+    { id: "item_hoodcap", title: "Hood + Cap Combo", cost: 60, description: "Stealth security camera visor. Anti-recognition sweep.", category: "hats", locked: false },
+    { id: "item_cyberhat", title: "Cyber Detective Hat", cost: 70, description: "Triangulated sensor deerstalker. Parsed grid tracker.", category: "hats", locked: false },
+    { id: "item_headset", title: "Signal Officer Headset", cost: 60, description: "High frequency audio interceptor. Direct line decryptor.", category: "hats", locked: false },
+    { id: "item_crown", title: "Broken Crown Helmet", cost: 80, description: "Cracked operational helm. Unlocks on Beak Storm defeat.", category: "hats", locked: false }, // Hint details
 
     // 5. UTILITY ACCESSORIES
-    { id: "item_drone", title: "Mini Drone Companion", cost: 120, description: "Autonomous pathfinder drone scout", category: "utility", locked: false },
-    { id: "item_wrist", title: "Holo-Wrist Device", cost: 90, description: "Offline terminal matrix projector", category: "utility", locked: false },
-    { id: "item_satchel", title: "Spy Satchel", cost: 80, description: "Weatherproof datachip storage pouch", category: "utility", locked: false },
-    { id: "item_belt", title: "Lockpick Belt", cost: 70, description: "Compact micro-lockpicker loops", category: "utility", locked: false },
-    { id: "item_injector", title: "Energy Injector", cost: 70, description: "Server alert delay biosignal syringe", category: "utility", locked: false },
-    { id: "item_files", title: "Classified File Holder", cost: 80, description: "Case dossiers and secret files binder", category: "utility", locked: false },
+    { id: "item_drone", title: "Mini Drone Companion", cost: 120, description: "Autonomous pathfinder drone scout with telemetry uplink.", category: "utility", locked: false },
+    { id: "item_wrist", title: "Holo-Wrist Device", cost: 90, description: "Sub-dermal holographic terminal projector interface.", category: "utility", locked: false },
+    { id: "item_satchel", title: "Spy Satchel", cost: 80, description: "Weatherproof datachip compartment pouch. High capacity.", category: "utility", locked: false },
+    { id: "item_belt", title: "Lockpick Belt", cost: 70, description: "Serrated locksmith picks and secondary gear loops.", category: "utility", locked: false },
+    { id: "item_injector", title: "Energy Injector", cost: 70, description: "Emergency adrenalin dose. Shuts database down alerts.", category: "utility", locked: false },
+    { id: "item_files", title: "Classified File Holder", cost: 80, description: "Carbon hardcase for dossier storage. Unlocks on Mustela defeat.", category: "utility", locked: false },
 
     // Legacy compatibility fallback
-    { id: "item_emblem", title: "Velvet Fang Emblem", cost: 0, description: "Elite level insignia badge", category: "rewards", locked: false, unlockedByBoss: true },
-    { id: "item_trophy", title: "Viper Boss Trophy", cost: 9999, description: "Syndicate victory commemoration statue", category: "rewards", locked: true }
+    { id: "item_emblem", title: "Velvet Fang Emblem", cost: 0, description: "Elite level insignia badge.", category: "rewards", locked: false, unlockedByBoss: true },
+    { id: "item_trophy", title: "Viper Boss Trophy", cost: 9999, description: "Syndicate victory commemoration statue.", category: "rewards", locked: true }
   ];
 
   const handleAcquireShopItem = (item: ShopItem) => {
@@ -4285,33 +4285,35 @@ export default function App() {
                           })}
                         </div>
                       </div>
-                    </div>
 
+                    </div>
                   </div>
                 </div>
 
                 {/* CATEGORIES DETAILED GRID CATALOG */}
-                <div className="bg-[#02050c]/90 text-zinc-350 border-2 border-[#0d283c] rounded-xl p-4 md:p-6 shadow-2xl space-y-8 font-mono relative">
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+                <div className="bg-[#02050c]/98 text-zinc-350 border-2 border-[#0d283c] rounded-xl p-4 md:p-6 shadow-[0_0_40px_rgba(3,7,18,0.9)] space-y-8 font-mono relative overflow-hidden">
+                  {/* Modern scan lines and glowing backing */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 blur-[120px] pointer-events-none"></div>
 
-                  <div className="border-b-2 border-dashed border-[#0d283c]/30 pb-4 flex flex-col sm:flex-row justify-between items-center gap-3 relative z-10">
+                  <div className="border-b-2 border-dashed border-[#0d283c]/40 pb-4 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-10">
                     <div>
-                      <h2 className="text-sm font-extrabold tracking-tight uppercase flex items-center gap-1.5 text-white neon-text-cyan">
-                        📂 TACTICAL EQUIPMENT CATALOG
+                      <h2 className="text-base font-black tracking-widest uppercase flex items-center gap-2 text-white">
+                        <span className="text-[#00cbff]">&gt;&gt;</span> TACTICAL EQUIPMENT CATALOG
                       </h2>
-                      <p className="text-[9px] text-[#00cbff] font-bold uppercase tracking-wider mt-0.5">
-                        SELECT ACQUISITIONS BELOW BY SPENDING SECURE FIELD CREDITS (CR)
+                      <p className="text-[10px] text-[#00cbff] font-bold uppercase tracking-wider mt-0.5">
+                        SPEND SECURE FIELD CREDITS (CR) TO UPGRADE OPERATIVE HARDWARE SYSTEM CAPABILITIES
                       </p>
                     </div>
 
-                    {/* Category quick selectors */}
-                    <div className="flex flex-wrap gap-1 justify-center">
+                    {/* Category quick selectors with cyber accents */}
+                    <div className="flex flex-wrap gap-1.5 justify-center">
                       {[
-                        { id: "coats", label: "COATS" },
-                        { id: "goggles", label: "GOGGLES" },
-                        { id: "tails", label: "TAILS" },
-                        { id: "hats", label: "HATS" },
-                        { id: "utility", label: "UTILITIES" },
+                        { id: "coats", label: "OUTFITS" },
+                        { id: "goggles", label: "OPTICS" },
+                        { id: "tails", label: "CHASSIS" },
+                        { id: "hats", label: "HEADGEAR" },
+                        { id: "utility", label: "UTILITY" },
                       ].map((catSelector) => (
                         <button
                           key={catSelector.id}
@@ -4319,7 +4321,7 @@ export default function App() {
                             playSynthSound("tap");
                             document.getElementById(`sec_${catSelector.id}`)?.scrollIntoView({ behavior: "smooth" });
                           }}
-                          className="px-2.5 py-1 bg-[#040c18] hover:bg-[#00cbff] text-[#00cbff] hover:text-black border border-[#00cbff]/40 rounded text-[8px] font-extrabold transition-colors select-none"
+                          className="px-3 py-1 bg-[#040c18] hover:bg-[#00cbff] text-[#00cbff] hover:text-black border border-[#00cbff]/30 hover:border-transparent rounded text-[9px] font-extrabold transition-all duration-200 select-none cursor-pointer tracking-wider"
                         >
                           {catSelector.label}
                         </button>
@@ -4327,151 +4329,258 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Render Categories sequentially to match the reference */}
-                  {[
-                    { id: "coats", name: "Coats & Outfits", icon: "🧥" },
-                    { id: "goggles", name: "Goggles & Face Accessories", icon: "🕶️" },
-                    { id: "tails", name: "Tail Upgrades", icon: "🧬" },
-                    { id: "hats", name: "Hats", icon: "🎩" },
-                    { id: "utility", name: "Utility Accessories", icon: "💼" }
-                  ].map((categoryItem) => {
-                    const filtered = initialShopItems.filter((item) => item.category === categoryItem.id);
+                  {/* Rendering sequentially to match the specific grid layouts of the reference photo */}
+                  <div className="space-y-10 relative z-10">
                     
-                    return (
-                      <section key={categoryItem.id} id={`sec_${categoryItem.id}`} className="space-y-4 scroll-mt-6 relative z-10">
-                        {/* Section Header */}
-                        <div className="flex items-center gap-2 border-b-2 border-[#0d283c] pb-1">
-                          <span className="text-sm font-black text-[#00cbff]">{categoryItem.icon}</span>
-                          <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase neon-text-cyan">
-                            {categoryItem.name}
-                          </h3>
-                        </div>
+                    {/* helper mappings */}
+                    {(() => {
+                      const getItemRarity = (itemId: string) => {
+                        const legendary = ["item_trenchcoat", "item_neon", "item_crown", "item_drone", "item_files"];
+                        const epic = ["item_cloak", "item_recon", "item_hacker", "item_mask", "item_antenna", "item_grapple", "item_cyberhat", "item_headset", "item_injector"];
+                        const rare = ["item_arctic", "item_goggles", "item_lens", "item_jammer", "item_claw", "item_hoodcap", "item_wrist", "item_satchel"];
+                        
+                        if (legendary.includes(itemId)) {
+                          return { name: "LEGENDARY", color: "text-amber-400 border-amber-500/30 bg-amber-500/5", glow: "shadow-[0_0_12px_rgba(245,158,11,0.2)]", ring: "border-amber-500/20" };
+                        }
+                        if (epic.includes(itemId)) {
+                          return { name: "EPIC", color: "text-purple-400 border-purple-500/30 bg-purple-500/5", glow: "shadow-[0_0_12px_rgba(168,85,247,0.15)]", ring: "border-purple-500/20" };
+                        }
+                        if (rare.includes(itemId)) {
+                          return { name: "RARE", color: "text-sky-400 border-sky-500/30 bg-sky-500/5", glow: "shadow-[0_0_12px_rgba(14,165,233,0.12)]", ring: "border-sky-500/20" };
+                        }
+                        return { name: "COMMON", color: "text-slate-400 border-slate-600/30 bg-slate-600/5", glow: "", ring: "border-slate-800" };
+                      };
 
-                        {/* Compact Grid System identical to reference image */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-5">
-                          {filtered.map((item) => {
-                            const owned = purchasedItemIds.includes(item.id);
-                            const equipped = equippedItemIds.includes(item.id);
-                            
-                            const catInfo = (() => {
-                              switch (item.category) {
-                                case "coats": return { label: "OUTFIT // S-RANK", color: "text-rose-400 border-rose-500/20 bg-rose-500/5 shadow-[0_0_5px_rgba(244,63,94,0.05)]" };
-                                case "goggles": return { label: "OPTICS // TECH-A", color: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5 shadow-[0_0_5px_rgba(34,211,238,0.05)]" };
-                                case "tails": return { label: "CHASSIS // MOD-B", color: "text-purple-400 border-purple-500/20 bg-purple-500/5 shadow-[0_0_5px_rgba(192,132,252,0.05)]" };
-                                case "hats": return { label: "HEADGEAR // DET-C", color: "text-amber-400 border-amber-500/25 bg-amber-500/5 shadow-[0_0_5px_rgba(251,191,36,0.05)]" };
-                                case "utility": return { label: "UTILITY // GEAR-S", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_5px_rgba(52,211,153,0.05)]" };
-                                default: return { label: "REWARD // CLASSIFIED", color: "text-cyan-350 border-cyan-400/25 bg-cyan-400/5 shadow-[0_0_5px_rgba(6,182,212,0.05)]" };
+                      const isItemLockedByBoss = (itemId: string) => {
+                        if (itemId === "item_crown" && !defeatedLvl1Boss) {
+                          return "DEFEAT BEAK STORM (LVL 1 BOSS)";
+                        }
+                        if (itemId === "item_files" && !defeatedLvl2Boss) {
+                          return "DEFEAT MR. MUSTELA (LVL 2 BOSS)";
+                        }
+                        return null;
+                      };
+
+                      const renderItemCard = (item: ShopItem) => {
+                        const owned = purchasedItemIds.includes(item.id);
+                        const equipped = equippedItemIds.includes(item.id);
+                        const rarity = getItemRarity(item.id);
+                        const bossLockMessage = isItemLockedByBoss(item.id);
+
+                        return (
+                          <motion.div
+                            key={item.id}
+                            whileHover={!bossLockMessage ? { y: -4, scale: 1.02 } : {}}
+                            whileTap={!bossLockMessage ? { scale: 0.98 } : {}}
+                            onClick={() => {
+                              if (bossLockMessage) {
+                                playSynthSound("alarm");
+                                addToast(`🔒 Locked: ${bossLockMessage}`, "warn");
+                                return;
                               }
-                            })();
-
-                            return (
-                              <motion.div
-                                key={item.id}
-                                whileHover={{ y: -3, scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => {
-                                  if (owned) {
-                                    handleToggleEquipItem(item.id);
-                                  } else {
-                                    handleAcquireShopItem(item);
-                                  }
-                                }}
-                                className={`group flex flex-col justify-between p-2.5 rounded-xl border-2 text-center text-white transition-all relative overflow-hidden select-none cursor-pointer ${
-                                  equipped 
-                                  ? "bg-slate-900/60 border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
+                              if (owned) {
+                                handleToggleEquipItem(item.id);
+                              } else {
+                                handleAcquireShopItem(item);
+                              }
+                            }}
+                            className={`group flex flex-col justify-between p-3 rounded-xl border-2 transition-all duration-300 relative select-none cursor-pointer ${
+                              equipped 
+                                ? "bg-[#041212]/95 border-[#10b981] shadow-[0_0_20px_rgba(16,185,129,0.25)]" 
+                                : bossLockMessage
+                                  ? "bg-[#02050c]/95 border-red-950/60 opacity-45 cursor-not-allowed"
                                   : owned 
-                                    ? "bg-[#030712]/95 border-slate-950 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.1)]"
-                                    : "bg-slate-950/20 border-slate-950/40 hover:border-cyan-500/20"
-                                }`}
-                              >
-                                {/* Locked Overlay Indicator */}
-                                {item.locked && !owned && (
-                                  <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center p-2 text-center">
-                                    <div className="p-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                                      <Lock size={12} className="text-orange-400 stroke-[2.5]" />
-                                    </div>
-                                    <span className="text-[7.5px] font-black text-orange-400 uppercase tracking-widest mt-1">[ RESTRICTED ]</span>
+                                    ? "bg-[#030814]/95 border-cyan-950 hover:border-[#00cbff]/50 hover:shadow-[0_0_15px_rgba(0,203,255,0.15)]"
+                                    : "bg-[#010408]/95 border-zinc-900/60 hover:border-cyan-500/20 hover:shadow-[0_0_10px_rgba(6,182,212,0.05)]"
+                            }`}
+                          >
+                            {/* Reticle corners */}
+                            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t border-l border-zinc-700/60 pointer-events-none"></div>
+                            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t border-r border-zinc-700/60 pointer-events-none"></div>
+                            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b border-l border-zinc-700/60 pointer-events-none"></div>
+                            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b border-r border-zinc-700/60 pointer-events-none"></div>
+
+                            {/* Rarity color bar indicator on top */}
+                            <div className={`absolute top-0 inset-x-0 h-[3px] ${
+                              equipped ? "bg-[#10b981]" : bossLockMessage ? "bg-red-800" : 
+                              rarity.name === "LEGENDARY" ? "bg-amber-500 animate-pulse" :
+                              rarity.name === "EPIC" ? "bg-purple-500" :
+                              rarity.name === "RARE" ? "bg-sky-500" : "bg-slate-700"
+                            }`}></div>
+
+                            {/* Custom Card Preview Box */}
+                            <div className="aspect-[4/3] w-full bg-slate-950/80 border border-slate-900 rounded-lg flex items-center justify-center p-2 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-500/25 shadow-[inset_0_0_12px_rgba(0,0,0,0.85)]">
+                              <span className="absolute top-1 left-1.5 text-[6.5px] text-zinc-650 font-mono tracking-tighter select-none">
+                                REF_#{item.id.replace("item_", "").toUpperCase()}
+                              </span>
+                              <span className="absolute top-1 right-1.5 text-[6.5px] text-zinc-650 font-mono tracking-tighter select-none">
+                                RANK.{rarity.name[0]}
+                              </span>
+
+                              {/* Glowing scanline filter */}
+                              {equipped && (
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#10b981]/8 to-transparent h-[40%] w-full pointer-events-none animate-[scan_2.5s_linear_infinite]"></div>
+                              )}
+
+                              {/* Clean sci-fi graph background grids */}
+                              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.015)_1px,transparent_1px)] bg-[size:7px_7px] pointer-events-none"></div>
+
+                              {/* Live customized rodent avatar */}
+                              <div className={`transition-transform duration-300 ${!bossLockMessage ? "group-hover:scale-105" : "scale-95 filter saturate-50 brightness-50"}`}>
+                                <RodentAvatar
+                                  size={68}
+                                  coat={item.category === "coats" ? item.id : null}
+                                  goggles={item.category === "goggles" ? item.id : null}
+                                  tail={item.category === "tails" ? item.id : null}
+                                  hat={item.category === "hats" ? item.id : null}
+                                  utility={item.category === "utility" ? item.id : null}
+                                  className="drop-shadow-[0_0_8px_rgba(255,255,255,0.05)]"
+                                />
+                              </div>
+
+                              {/* Overlay for dynamically locked items */}
+                              {bossLockMessage && (
+                                <div className="absolute inset-0 bg-black/92 backdrop-blur-[0.5px] flex flex-col items-center justify-center p-2 z-10 text-center">
+                                  <div className="p-1.5 rounded bg-red-950/20 border border-red-900/30">
+                                    <Lock size={12} className="text-red-500 animate-pulse stroke-[2.5]" />
+                                  </div>
+                                  <span className="text-[7px] font-mono text-red-500 font-extrabold tracking-widest uppercase mt-1">
+                                    RESTRICTED DATA
+                                  </span>
+                                  <span className="text-[6.5px] text-zinc-500 font-bold uppercase mt-0.5 max-w-[90%] leading-none text-wrap">
+                                    {bossLockMessage}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Text labels and price indicator */}
+                            <div className="mt-3 flex flex-col items-center flex-grow justify-between space-y-2">
+                              <div className="space-y-1 w-full text-center">
+                                <h4 className="text-[10.5px] font-black tracking-wider uppercase text-zinc-100 group-hover:text-[#00cbff] transition-colors leading-tight font-sans">
+                                  {item.title}
+                                </h4>
+                                
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <span className={`text-[7px] font-extrabold tracking-widest px-1.5 py-0.5 rounded border border-white/5 font-mono leading-none ${rarity.color} ${rarity.glow}`}>
+                                    {rarity.name}
+                                  </span>
+                                  <span className="text-[7px] font-bold text-zinc-550 bg-zinc-950/50 border border-zinc-900 px-1 py-0.5 rounded leading-none">
+                                    {item.category.toUpperCase()}
+                                  </span>
+                                </div>
+
+                                <p className="text-[8px] text-zinc-400 font-semibold leading-normal mt-2 select-none h-9 overflow-hidden">
+                                  {item.description}
+                                </p>
+                              </div>
+
+                              {/* Interactive activation indicator button strip */}
+                              <div className="w-full pt-2 border-t border-zinc-900 flex items-center justify-center">
+                                {equipped ? (
+                                  <div className="w-full py-1 rounded bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.15)]">
+                                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
+                                    <span className="text-[7.5px] font-black text-[#10b981] tracking-wider uppercase font-mono leading-none">
+                                      EQUIPPED
+                                    </span>
+                                  </div>
+                                ) : owned ? (
+                                  <div className="w-full py-1 rounded bg-cyan-950/20 hover:bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center cursor-pointer group-hover:border-[#00cbff]/50 transition-colors">
+                                    <span className="text-[7.5px] font-black text-cyan-400 tracking-wider uppercase font-mono leading-none">
+                                      EQUIP MODULE
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="w-full py-1 rounded bg-[#0b0805] hover:bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/40 flex items-center justify-center gap-1.5 transition-all duration-200">
+                                    <span className="text-[9px] font-black font-mono text-amber-500 flex items-center gap-0.5 leading-none">
+                                      🔸 {item.cost} <span className="text-[7px] text-zinc-650">CR</span>
+                                    </span>
                                   </div>
                                 )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      };
 
-                                {/* Card Preview Hologram */}
-                                <div className="aspect-square bg-slate-950 border border-slate-900 rounded-lg flex items-center justify-center p-2.5 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-500/25 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
-                                  {/* Light grid pattern */}
-                                  <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none"></div>
-                                  {/* Subtle radial glow */}
-                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.04)_0%,transparent_75%)] pointer-events-none group-hover:opacity-100 opacity-60 transition-opacity"></div>
-                                  
-                                  <RodentAvatar
-                                    size={52}
-                                    coat={item.category === "coats" ? item.id : null}
-                                    goggles={item.category === "goggles" ? item.id : null}
-                                    tail={item.category === "tails" ? item.id : null}
-                                    hat={item.category === "hats" ? item.id : null}
-                                    utility={item.category === "utility" ? item.id : null}
-                                    className="transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.05)]"
-                                  />
+                      return (
+                        <div className="space-y-10">
+                          {/* Sequential display of first 3 primary horizontal categories */}
+                          {[
+                            { id: "coats", name: "Coats & Outfits", icon: "🧥" },
+                            { id: "goggles", name: "Goggles & Face Accessories", icon: "🕶️" },
+                            { id: "tails", name: "Tail Upgrades", icon: "🧬" }
+                          ].map((categoryItem) => {
+                            const filtered = initialShopItems.filter((item) => item.category === categoryItem.id);
+                            const columnsCount = categoryItem.id === "tails" ? "grid-cols-2 md:grid-cols-5" : "grid-cols-2 md:grid-cols-6";
+                            
+                            return (
+                              <section key={categoryItem.id} id={`sec_${categoryItem.id}`} className="space-y-4 scroll-mt-6">
+                                {/* Sleek Cyberpunk Header with cap indicator and gradient separator */}
+                                <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
+                                  <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
+                                  <span className="text-xs font-black text-[#00cbff]">{categoryItem.icon}</span>
+                                  <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
+                                    {categoryItem.name}
+                                  </h3>
+                                  <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
                                 </div>
 
-                                {/* Item descriptive details */}
-                                <div className="mt-2 flex flex-col items-center flex-grow justify-between">
-                                  <div className="space-y-1 w-full">
-                                    <h4 className="text-[9.5px] font-black leading-tight tracking-wide uppercase text-zinc-100 group-hover:text-[#00cbff] transition-colors truncate">
-                                      {item.title}
-                                    </h4>
-                                    
-                                    {/* Short Rarity & Type Tag */}
-                                    <div className="flex justify-center">
-                                      <span className={`text-[7px] font-extrabold tracking-widest px-1.5 py-0.5 rounded border border-white/5 font-mono leading-none ${catInfo.color}`}>
-                                        {catInfo.label}
-                                      </span>
-                                    </div>
-
-                                    {/* Optional extremely short subtitle / stat descriptor (only 1 clean line) */}
-                                    <p className="text-[7.5px] text-zinc-500 font-extrabold tracking-tight uppercase leading-none mt-1 truncate max-w-full">
-                                      {item.description}
-                                    </p>
-                                  </div>
-
-                                  {/* Interactive bottom status indicator */}
-                                  <div className="w-full mt-2.5 pt-1.5 border-t border-slate-900 flex items-center justify-center">
-                                    {equipped ? (
-                                      <div className="w-full py-1 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center gap-1">
-                                        <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
-                                        <span className="text-[7.5px] font-extrabold text-[#10b981] uppercase font-mono leading-none">
-                                          ACTIVE SYNC
-                                        </span>
-                                      </div>
-                                    ) : owned ? (
-                                      <div className="w-full py-1 rounded bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/40 transition-colors">
-                                        <span className="text-[7.5px] font-black text-cyan-400 uppercase font-mono leading-none tracking-wider">
-                                          EQUIP UNIT
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <div className="w-full py-1 rounded bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/25 flex items-center justify-center gap-1 transition-colors">
-                                        <span className="text-[7.5px] font-black font-mono text-orange-400 flex items-center gap-0.5 select-none leading-none">
-                                          🔸 {item.cost} CR
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
+                                <div className={`grid ${columnsCount} gap-4`}>
+                                  {filtered.map(renderItemCard)}
                                 </div>
-                              </motion.div>
+                              </section>
                             );
                           })}
+
+                          {/* Dual columns split screen layout for Hats and Utilities matching reference layout */}
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2">
+                            {/* Left Column: Hats */}
+                            <section id="sec_hats" className="space-y-4 scroll-mt-6">
+                              <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
+                                <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
+                                <span className="text-xs font-black text-[#00cbff]">🎩</span>
+                                <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
+                                  Hats
+                                </h3>
+                                <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
+                              </div>
+
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                {initialShopItems.filter((i) => i.category === "hats").map(renderItemCard)}
+                              </div>
+                            </section>
+
+                            {/* Right Column: Utilities */}
+                            <section id="sec_utility" className="space-y-4 scroll-mt-6">
+                              <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
+                                <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
+                                <span className="text-xs font-black text-[#00cbff]">💼</span>
+                                <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
+                                  Utility Accessories
+                                </h3>
+                                <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
+                              </div>
+
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                {initialShopItems.filter((i) => i.category === "utility").map(renderItemCard)}
+                              </div>
+                            </section>
+                          </div>
                         </div>
-                      </section>
-                    );
-                  })}
+                      );
+                    })()}
+
+                  </div>
 
                   {/* BOTTOM TACTICAL FOOTER DIRECTIVES */}
-                  <div className="border-t-2 border-[#0d283c]/50 pt-4 mt-8 flex flex-col md:flex-row justify-between items-center text-[8.5px] text-zinc-500 font-extrabold gap-3 select-none">
-                    <div className="flex items-center gap-1 font-headline">
-                      <span>★</span>
+                  <div className="border-t border-[#0d283c]/40 pt-4 mt-8 flex flex-col md:flex-row justify-between items-center text-[9px] text-[#00cbff]/60 font-black gap-3 select-none tracking-widest">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#00cbff] animate-pulse">★</span>
                       <span>DEFEAT BOSSES IN TACTICAL RECKONING TO DECRYPT EXCLUSIVE FIELD EQUIPMENT!</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 font-mono">
+                    <div className="flex flex-wrap gap-4 font-mono">
                       <span>CAT → 🐾</span>
                       <span>HAWK → 🪶</span>
                       <span>WEASEL → 📋</span>
