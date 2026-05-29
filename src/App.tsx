@@ -407,9 +407,9 @@ export default function App() {
     
     // Default list of habits
     const defaults: Habit[] = [
-      { id: "h_sleep", userId: "local_agent", title: "Sleep Hygiene", type: "sleep", completed: false, currentValue: "7h 42m REM Cycle", energyReward: 20, difficulty: "medium" },
-      { id: "h_exercise", userId: "local_agent", title: "Exercise Routine", type: "exercise", completed: false, currentValue: "21 / 30 MINUTES", energyReward: 20, difficulty: "medium" },
-      { id: "h_intel", userId: "local_agent", title: "Intelligence Analysis", type: "intelligence", completed: false, currentValue: "00:45:12 active streak", energyReward: 40, difficulty: "hard" },
+      { id: "h_sleep", userId: "local_agent", title: "Sleep", type: "sleep", completed: false, currentValue: "7h 42m", energyReward: 20, difficulty: "medium" },
+      { id: "h_exercise", userId: "local_agent", title: "Exercise", type: "exercise", completed: false, currentValue: "21 / 30", energyReward: 20, difficulty: "medium" },
+      { id: "h_intel", userId: "local_agent", title: "Study Session", type: "intelligence", completed: false, currentValue: "45m", energyReward: 40, difficulty: "hard" },
       { id: "h_mood", userId: "local_agent", title: "Mood Reflection", type: "mood", completed: false, currentValue: "FOCUSED", energyReward: 10, difficulty: "easy" },
     ];
 
@@ -766,7 +766,7 @@ export default function App() {
           setSleepProgressSec((prev) => prev + 10); // Sleep increments fast in simulation
         }
       }, 1000);
-      const label = selectedProtocolType === "intelligence" ? "Intelligence Analysis" : selectedProtocolType === "exercise" ? "Exercise Routine" : "Sleep Hygiene";
+      const label = selectedProtocolType === "intelligence" ? "Study Session" : selectedProtocolType === "exercise" ? "Exercise" : "Sleep";
       addToast(`Focus Protocol started: Timing '${label}' session sync.`, "success");
     } else {
       setTimerRunning(false);
@@ -779,8 +779,8 @@ export default function App() {
         setCredits((prev) => prev + earnedCr);
         setXp((prev) => prev + earnedXp);
         setHasFinishedTimer(true);
-        const label = selectedProtocolType === "intelligence" ? "Intelligence Analysis" : selectedProtocolType === "exercise" ? "Exercise Routine" : "Sleep Hygiene";
-        addToast(`Focus session completed for '${label}'! Daily directives authorized: +${earnedCr} CR // +${earnedXp} XP!`, "credits");
+        const label = selectedProtocolType === "intelligence" ? "Study Session" : selectedProtocolType === "exercise" ? "Exercise" : "Sleep";
+        addToast(`Focus session completed for '${label}'! +${earnedCr} CR // +${earnedXp} XP`, "credits");
         syncUserDataToCloud(credits + earnedCr, xp + earnedXp, threatLevel);
       } else {
         addToast("Focus terminated. Complete at least 3 seconds of focus to authorize your Daily Directives.", "warn");
@@ -841,13 +841,13 @@ export default function App() {
 
     if (!isHabitAuthorized(hTarget.type)) {
       if (hTarget.type === "sleep") {
-        addToast(`🔒 LOCKED: Sleep Hygiene target of 7h is not yet met. Active sleep tracking required.`, "warn");
+        addToast(`🔒 Target locked: 7h needed.`, "warn");
       } else if (hTarget.type === "exercise") {
-        addToast(`🔒 LOCKED: Exercise Routine target of 30m is not yet met. Active exercise countdown required.`, "warn");
+        addToast(`🔒 Target locked: 30m needed.`, "warn");
       } else if (hTarget.type === "intelligence") {
-        addToast(`🔒 LOCKED: Intelligence Analysis target of 2h is not yet met. Use the terminal focus log.`, "warn");
+        addToast(`🔒 Target locked: 2h study focus needed.`, "warn");
       } else {
-        addToast(`🔒 DIRECTIVE LOCKED: Target times have not been met yet.`, "warn");
+        addToast(`🔒 Directive locked.`, "warn");
       }
       return;
     }
@@ -864,7 +864,7 @@ export default function App() {
             const nextCredits = credits + creditsReward;
             setXp(nextXp);
             setCredits(nextCredits);
-            addToast(`Protocol Executed. Completed '${h.title}': +${xpReward} XP (Investigation Fuel) // +${creditsReward} CR!`, "credits");
+            addToast(`Protocol Executed. Completed '${h.title}': +${xpReward} XP // +${creditsReward} CR!`, "credits");
             syncUserDataToCloud(nextCredits, nextXp, threatLevel);
           } else {
             const nextXp = Math.max(0, xp - xpReward);
@@ -2238,7 +2238,7 @@ export default function App() {
                 <section className="space-y-3 bg-[#111111] border border-white/5 rounded-2xl overflow-hidden shadow-xl">
                   <div className="px-5 py-4 bg-white/2 border-b border-white/5 flex justify-between items-center">
                     <h3 className="font-extrabold text-[11px] text-gray-200 tracking-widest uppercase flex items-center gap-1.5">
-                      <Award size={12} className="text-blue-500" /> Active Daily Directives
+                      <Award size={12} className="text-blue-500" /> DAILY OPS
                     </h3>
                     <div className="flex items-center gap-2">
                        <span className={`px-2 py-0.5 rounded-full text-[8.5px] uppercase tracking-widest font-bold border ${
@@ -2246,38 +2246,11 @@ export default function App() {
                         ? "bg-yellow-550/10 text-yellow-400 border-yellow-500/20 animate-pulse" 
                         : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                       }`}>
-                        {habits.every((h) => isHabitAuthorized(h.type)) ? "🔓 ALL AUTHORIZED" : "🔒 PENDING TARGETS"}
+                        {habits.every((h) => isHabitAuthorized(h.type)) ? "🔓 TARGETS" : "🔒 TARGETS"}
                       </span>
                       <span className="font-mono text-[9px] text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
-                        {habits.filter((h) => h.completed).length}/{habits.length} LOGGED
+                        {habits.filter((h) => h.completed).length}/{habits.length}
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="px-5 py-3 bg-blue-500/5 border-b border-white/5 flex flex-col gap-1.5 text-gray-400 text-[10.5px] font-mono leading-tight">
-                    <div className="flex items-center gap-2 text-blue-400">
-                      <AlertCircle size={12} className="text-blue-500 flex-shrink-0" />
-                      <span className="font-bold uppercase tracking-wider">Operational Target Check Off Guidelines:</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 mt-1 pl-3.5 pt-0.5 border-l border-white/15">
-                      <div className="space-y-0.5">
-                        <p className="text-[8px] text-gray-500 uppercase font-bold">Sleep Target (7h)</p>
-                        <p className={`text-[10px] font-extrabold ${isHabitAuthorized("sleep") ? "text-yellow-400 font-bold" : "text-amber-500 animate-pulse font-bold"}`}>
-                          {isHabitAuthorized("sleep") ? "🔓 Ready" : `${Math.floor(sleepProgressSec / 3600)}h ${Math.floor((sleepProgressSec % 3600) / 60)}m`}
-                        </p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[8px] text-gray-500 uppercase font-bold">Exercise Target (30m)</p>
-                        <p className={`text-[10px] font-extrabold ${isHabitAuthorized("exercise") ? "text-yellow-400 font-bold" : "text-amber-500 animate-pulse font-bold"}`}>
-                          {isHabitAuthorized("exercise") ? "🔓 Ready" : `${Math.floor(exerciseProgressSec / 60)}m / 30m`}
-                        </p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[8px] text-gray-500 uppercase font-bold">Intelligence (2h)</p>
-                        <p className={`text-[10px] font-extrabold ${isHabitAuthorized("intelligence") ? "text-yellow-400 font-bold" : "text-amber-500 animate-pulse font-bold"}`}>
-                          {isHabitAuthorized("intelligence") ? "🔓 Ready" : `${Math.floor(sessionSecCount / 3600)}h ${Math.floor((sessionSecCount % 3600) / 60)}m`}
-                        </p>
-                      </div>
                     </div>
                   </div>
 
@@ -2285,7 +2258,7 @@ export default function App() {
                     {habits.map((h) => (
                       <div key={h.id} className="p-4 hover:bg-white/2 transition-colors">
                         <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {/* Checkbox circle triggers toggle */}
                             <button 
                               onClick={() => handleToggleHabit(h.id)}
@@ -2306,32 +2279,27 @@ export default function App() {
                               )}
                             </button>
                             <div className="flex flex-col">
-                              <span className={`text-[13px] font-bold transition-all ${h.completed ? "line-through text-gray-600" : "text-white"}`}>
-                                {h.title}
+                              <span className={`text-[13px] font-bold transition-all ${h.completed ? "line-through text-gray-500" : "text-white"}`}>
+                                {h.title === "Sleep Hygiene" ? "Sleep" : h.title === "Exercise Routine" ? "Exercise" : h.title === "Intelligence Analysis" ? "Study Session" : h.title}
                               </span>
-                              {getHabitUnlockProgress(h.type) && (
-                                <span className={`text-[9px] font-mono mt-0.5 flex items-center gap-1 ${
-                                  isHabitAuthorized(h.type) 
-                                  ? "text-yellow-400 font-bold" 
-                                  : "text-amber-500/80"
-                                }`}>
-                                  {isHabitAuthorized(h.type) ? (
-                                    <>
-                                      <Unlock size={8} /> Authorized (Target duration fully recorded)
-                                    </>
-                                  ) : h.type === "sleep" ? (
-                                    <>
-                                      <Lock size={8} /> Target Duration Locked: {Math.floor(sleepProgressSec / 3600)}h / 7h tracked
-                                    </>
-                                  ) : h.type === "exercise" ? (
-                                    <>
-                                      <Lock size={8} /> Target Duration Locked: {Math.floor(exerciseProgressSec / 60)}m / 30m tracked
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Lock size={8} /> Target Duration Locked: {Math.floor(sessionSecCount / 3600)}h {Math.floor((sessionSecCount % 3600) / 60)}m / 2h tracked
-                                    </>
-                                  )}
+                              {h.type === "sleep" && (
+                                <span className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                                  {Math.floor(sleepProgressSec / 3600)}h / 7h
+                                </span>
+                              )}
+                              {h.type === "exercise" && (
+                                <span className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                                  {Math.floor(exerciseProgressSec / 60)}m / 30m
+                                </span>
+                              )}
+                              {h.type === "intelligence" && (
+                                <span className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                                  {Math.floor(sessionSecCount / 3600)}h / 2h
+                                </span>
+                              )}
+                              {h.type === "mood" && h.currentValue && (
+                                <span className="text-[10px] text-zinc-400 font-mono mt-0.5 uppercase">
+                                  {h.currentValue}
                                 </span>
                               )}
                             </div>
@@ -2351,7 +2319,7 @@ export default function App() {
                             )}
                             
                             <span className="font-mono text-[10px] text-indigo-400 font-extrabold tracking-wider bg-indigo-500/5 px-2.5 py-0.5 rounded border border-indigo-500/15 shadow-[0_0_8px_rgba(99,102,241,0.1)]">
-                              +{getXpRewardForHabit(h)} XP Fuel
+                              +{getXpRewardForHabit(h)} XP
                             </span>
                             
                             {/* Extra delete toggle for custom user protocols */}
@@ -2400,8 +2368,8 @@ export default function App() {
                         {h.type === "sleep" && (
                           <div className="bg-[#0e0e0e]/40 border border-[#524535]/10 rounded-lg p-2.5 flex justify-between items-center mt-2">
                             <div className="leading-none space-y-1">
-                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">REMAINING SLEEP TARGET</p>
-                              <p className="text-sm font-semibold tracking-wide text-white">{Math.floor(sleepProgressSec / 3600)}h {Math.floor((sleepProgressSec % 3600) / 60)}m <span className="text-blue-400 text-[10px] ml-0.5">REM Cycle</span></p>
+                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">REMAINING</p>
+                              <p className="text-sm font-semibold tracking-wide text-white">{Math.floor(sleepProgressSec / 3600)}h {Math.floor((sleepProgressSec % 3600) / 60)}m</p>
                             </div>
                             <button 
                               onClick={() => { playSynthSound("tap"); setSleepPlaying(!sleepPlaying); }}
@@ -2438,8 +2406,8 @@ export default function App() {
                               </div>
                             </div>
                             <div className="flex-grow">
-                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">COMBAT ENDURANCE PROGRESS</p>
-                              <p className="text-xs font-semibold text-white">{Math.floor(exerciseProgressSec / 60)} / 30 <span className="text-gray-500 text-[9px]">MINUTES</span></p>
+                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">PROGRESS</p>
+                              <p className="text-xs font-semibold text-white">{Math.floor(exerciseProgressSec / 60)} / 30</p>
                             </div>
                             <button 
                               onClick={handleToggleExerciseSession}
@@ -2458,11 +2426,11 @@ export default function App() {
                           <div className="bg-[#0e0e0e]/40 border border-white/5 rounded-lg p-3 font-mono text-[10px] mt-2 text-[#d6c3b0] space-y-2">
                             <div className="flex justify-between">
                               <div>
-                                <p className="text-[8px] text-zinc-500">SESSION_TIMER_UPTIME</p>
+                                <p className="text-[8px] text-zinc-500">SESSION</p>
                                 <p className="text-xs text-white tracking-widest">{formatTimerString(sessionSecCount)}</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-[8px] text-zinc-500">OBJ_SOLVED</p>
+                                <p className="text-[8px] text-zinc-500">CLUES</p>
                                 <p className="text-xs text-blue-400 tracking-widest">02 / 05</p>
                               </div>
                             </div>
@@ -2470,7 +2438,7 @@ export default function App() {
                               onClick={() => { playSynthSound("tap"); setSessionTimerActive(!sessionTimerActive); }}
                               className="w-full bg-blue-500/10 border border-blue-500/20 py-1.5 rounded uppercase tracking-wider hover:bg-blue-500/15 text-[9px] font-bold hover:text-white text-blue-400"
                             >
-                              {sessionTimerActive ? "PAUSE INTELLIGENCE STREAM" : "RESUME INTELLIGENCE STREAM"}
+                              {sessionTimerActive ? "PAUSE SESSION" : "START SESSION"}
                             </button>
                           </div>
                         )}
@@ -2543,7 +2511,7 @@ export default function App() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-indigo-505 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)]"></span>
-                      <span className="font-mono text-[9px] uppercase tracking-widest font-extrabold text-[#ffd7a9]">Investigation Fuel (XP)</span>
+                      <span className="font-mono text-[9px] uppercase tracking-widest font-extrabold text-[#ffd7a9]">XP</span>
                     </div>
                     <span className="font-mono text-[10px] font-extrabold text-white">
                       {xp} XP / {500} XP (Lvl {agentLevel})
@@ -4380,9 +4348,9 @@ export default function App() {
                     onChange={(e) => setNewHabitType(e.target.value as HabitType)}
                     className="w-full bg-black border border-white/10 rounded p-2.5 text-xs text-white"
                   >
-                    <option value="intelligence">Sector I: Intelligence Analysis</option>
-                    <option value="exercise">Sector E: Exercise Routine</option>
-                    <option value="sleep">Sector S: Sleep Hygiene</option>
+                    <option value="intelligence">Sector I: Study Session</option>
+                    <option value="exercise">Sector E: Exercise</option>
+                    <option value="sleep">Sector S: Sleep</option>
                     <option value="mood">Sector M: Mood Reflection</option>
                   </select>
                 </div>

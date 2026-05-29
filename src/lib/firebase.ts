@@ -13,12 +13,15 @@ export async function initFirebase() {
   if (isConfigured) return { app, db, auth, provider, isConfigured };
   
   try {
-    // Check if the configuration is active
-    const response = await fetch("/firebase-applet-config.json");
-    if (!response.ok) {
-      throw new Error("No active firebase config file found");
-    }
-    const firebaseConfig = await response.json();
+    const firebaseConfig = {
+      projectId: "axial-goal-wf4nj",
+      appId: "1:685383931428:web:ec08370dd7552a300b6ab1",
+      apiKey: "AIzaSyAFyBDXo4Njyg-0pNHrxbHaAT7XyY-Twu8",
+      authDomain: "axial-goal-wf4nj.firebaseapp.com",
+      firestoreDatabaseId: "ai-studio-67116852-f779-4ed3-8a11-7e4b585dadc1",
+      storageBucket: "axial-goal-wf4nj.firebasestorage.app",
+      messagingSenderId: "685383931428"
+    };
     
     app = initializeApp(firebaseConfig);
     db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
