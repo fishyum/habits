@@ -8,7 +8,7 @@ export interface UserProfile {
   updatedAt?: string;
 }
 
-export type HabitType = "sleep" | "exercise" | "intelligence" | "mood";
+export type HabitType = "sleep" | "exercise" | "intelligence" | "mood" | "creativity";
 
 export interface Habit {
   id: string;

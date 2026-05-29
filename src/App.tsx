@@ -14,6 +14,7 @@ import {
   Compass, 
   Moon,
   Flame,
+  Palette,
   Plus, 
   Send,
   Star,
@@ -410,6 +411,7 @@ export default function App() {
       { id: "h_sleep", userId: "local_agent", title: "Sleep", type: "sleep", completed: false, currentValue: "7h 42m", energyReward: 20, difficulty: "medium" },
       { id: "h_exercise", userId: "local_agent", title: "Exercise", type: "exercise", completed: false, currentValue: "21 / 30", energyReward: 20, difficulty: "medium" },
       { id: "h_intel", userId: "local_agent", title: "Study Session", type: "intelligence", completed: false, currentValue: "45m", energyReward: 40, difficulty: "hard" },
+      { id: "h_drawing", userId: "local_agent", title: "Drawing", type: "creativity", completed: false, currentValue: "0h", energyReward: 20, difficulty: "medium" },
       { id: "h_mood", userId: "local_agent", title: "Mood Reflection", type: "mood", completed: false, currentValue: "FOCUSED", energyReward: 10, difficulty: "easy" },
     ];
 
@@ -420,6 +422,10 @@ export default function App() {
     // Auto-bootstrap mood reflection habit for existing sessions
     if (!current.some((h) => h.type === "mood")) {
       current.push({ id: "h_mood", userId: "local_agent", title: "Mood Reflection", type: "mood", completed: false, currentValue: "FOCUSED", energyReward: 15 });
+    }
+    // Auto-bootstrap drawing habit for existing sessions
+    if (!current.some((h) => h.type === "creativity")) {
+      current.push({ id: "h_drawing", userId: "local_agent", title: "Drawing", type: "creativity", completed: false, currentValue: "0h", energyReward: 20, difficulty: "medium" });
     }
     return current;
   });
@@ -519,11 +525,15 @@ export default function App() {
   const [toasts, setToasts] = useState<{ id: string; text: string; type: "success" | "warn" | "credits" }[]>([]);
 
   // Timer counter representation
-  const [selectedProtocolType, setSelectedProtocolType] = useState<"sleep" | "exercise" | "intelligence">("intelligence");
+  const [selectedProtocolType, setSelectedProtocolType] = useState<"sleep" | "exercise" | "intelligence" | "creativity">("intelligence");
   const [sessionTimerActive, setSessionTimerActive] = useState(false);
   const [sessionSecCount, setSessionSecCount] = useState(() => {
     const saved = localStorage.getItem("agent_intel_session_sec");
     return saved ? parseInt(saved) : 2712; // starts e.g. 45:12
+  });
+  const [creativityProgressSec, setCreativityProgressSec] = useState(() => {
+    const saved = localStorage.getItem("agent_creativity_progress_sec");
+    return saved ? parseInt(saved) : 0; // starts e.g. 0h
   });
 
   // ---------------------------
@@ -650,6 +660,10 @@ export default function App() {
     localStorage.setItem("agent_sleep_seq_sec", sleepProgressSec.toString());
   }, [sleepProgressSec]);
 
+  useEffect(() => {
+    localStorage.setItem("agent_creativity_progress_sec", creativityProgressSec.toString());
+  }, [creativityProgressSec]);
+
 
   // -----------------------------------------------------
   // Data pulling & Cloud Sync functions (Firestore & Auth)
@@ -747,6 +761,45 @@ export default function App() {
   };
 
 
+  const startFocusForCategory = (type: "sleep" | "exercise" | "intelligence" | "creativity") => {
+    playSynthSound("tap");
+    setActiveTab("protocol");
+    setSelectedProtocolType(type);
+    
+    // Stop any existing stopwatch interval first to ensure clean reassignment
+    if (stopwatchInterval.current) {
+      clearInterval(stopwatchInterval.current);
+    }
+    
+    // Reset focused uptime seconds for the fresh session
+    setFocusedSeconds(0);
+    setTimerRunning(true);
+    
+    stopwatchInterval.current = setInterval(() => {
+      setFocusedSeconds((prev) => prev + 1);
+      
+      if (type === "intelligence") {
+        setSessionSecCount((prev) => prev + 1);
+      } else if (type === "exercise") {
+        setExerciseProgressSec((prev) => Math.min(1800, prev + 1));
+      } else if (type === "sleep") {
+        setSleepProgressSec((prev) => prev + 10);
+      } else if (type === "creativity") {
+        setCreativityProgressSec((prev) => Math.min(3600, prev + 1));
+      }
+    }, 1000);
+    
+    const getLabel = (t: string) => {
+      if (t === "intelligence") return "Study Session";
+      if (t === "exercise") return "Exercise";
+      if (t === "sleep") return "Sleep";
+      if (t === "creativity") return "Drawing";
+      return "Focus";
+    };
+    addToast(`Focus Protocol started: Timing '${getLabel(type)}' session sync.`, "success");
+  };
+
+
   // -----------------------------------------------------
   // Focus Stopwatch Protocol Logic
   // -----------------------------------------------------
@@ -764,9 +817,18 @@ export default function App() {
           setExerciseProgressSec((prev) => Math.min(1800, prev + 1));
         } else if (selectedProtocolType === "sleep") {
           setSleepProgressSec((prev) => prev + 10); // Sleep increments fast in simulation
+        } else if (selectedProtocolType === "creativity") {
+          setCreativityProgressSec((prev) => Math.min(3600, prev + 1));
         }
       }, 1000);
-      const label = selectedProtocolType === "intelligence" ? "Study Session" : selectedProtocolType === "exercise" ? "Exercise" : "Sleep";
+      const getLabel = (type: string) => {
+        if (type === "intelligence") return "Study Session";
+        if (type === "exercise") return "Exercise";
+        if (type === "sleep") return "Sleep";
+        if (type === "creativity") return "Drawing";
+        return "Focus";
+      };
+      const label = getLabel(selectedProtocolType);
       addToast(`Focus Protocol started: Timing '${label}' session sync.`, "success");
     } else {
       setTimerRunning(false);
@@ -779,7 +841,14 @@ export default function App() {
         setCredits((prev) => prev + earnedCr);
         setXp((prev) => prev + earnedXp);
         setHasFinishedTimer(true);
-        const label = selectedProtocolType === "intelligence" ? "Study Session" : selectedProtocolType === "exercise" ? "Exercise" : "Sleep";
+        const getLabel = (type: string) => {
+          if (type === "intelligence") return "Study Session";
+          if (type === "exercise") return "Exercise";
+          if (type === "sleep") return "Sleep";
+          if (type === "creativity") return "Drawing";
+          return "Focus";
+        };
+        const label = getLabel(selectedProtocolType);
         addToast(`Focus session completed for '${label}'! +${earnedCr} CR // +${earnedXp} XP`, "credits");
         syncUserDataToCloud(credits + earnedCr, xp + earnedXp, threatLevel);
       } else {
@@ -806,6 +875,7 @@ export default function App() {
     if (type === "sleep") return sleepProgressSec >= 25200; // 7 hours
     if (type === "exercise") return exerciseProgressSec >= 1800; // 30 mins
     if (type === "intelligence") return sessionSecCount >= 7200; // 2 hours
+    if (type === "creativity") return creativityProgressSec >= 3600; // 1 hour
     return true; // mood reflection or others are always unlocked
   };
 
@@ -813,6 +883,7 @@ export default function App() {
     if (type === "sleep") return { current: sleepProgressSec, target: 25200, label: "7 Hours" };
     if (type === "exercise") return { current: exerciseProgressSec, target: 1800, label: "30 Minutes" };
     if (type === "intelligence") return { current: sessionSecCount, target: 7200, label: "2 Hours" };
+    if (type === "creativity") return { current: creativityProgressSec, target: 3600, label: "1 Hour" };
     return null;
   };
 
@@ -2366,79 +2437,98 @@ export default function App() {
                           </div>
                         )}
                         {h.type === "sleep" && (
-                          <div className="bg-[#0e0e0e]/40 border border-[#524535]/10 rounded-lg p-2.5 flex justify-between items-center mt-2">
+                          <div className="bg-[#0e0e0e]/40 border border-[#524535]/15 rounded-xl p-3 flex justify-between items-center mt-2 font-mono">
                             <div className="leading-none space-y-1">
-                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">REMAINING</p>
-                              <p className="text-sm font-semibold tracking-wide text-white">{Math.floor(sleepProgressSec / 3600)}h {Math.floor((sleepProgressSec % 3600) / 60)}m</p>
+                              <p className="text-[8px] text-[#d6c3b0]/55 tracking-widest uppercase">SLEEP SYNCHRONICITY</p>
+                              <p className="text-xs font-extrabold tracking-widest text-white">{Math.floor(sleepProgressSec / 3600)}H {Math.floor((sleepProgressSec % 3600) / 60)}M / 7H</p>
                             </div>
                             <button 
-                              onClick={() => { playSynthSound("tap"); setSleepPlaying(!sleepPlaying); }}
-                              className={`w-8 h-8 rounded-full border flex items-center justify-center active:scale-90 transition-all ${
-                                sleepPlaying 
-                                ? "bg-cyan-950/40 border-blue-500 text-blue-400 animate-pulse" 
-                                : "border-white/10 text-gray-400"
-                              }`}
+                              onClick={() => startFocusForCategory("sleep")}
+                              className="px-3.5 py-1.5 rounded bg-blue-500/10 border border-blue-500/20 text-[9px] font-bold text-blue-400 uppercase tracking-widest hover:bg-blue-500/20 hover:text-white transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(59,130,246,0.15)] active:scale-95"
                             >
-                              {sleepPlaying ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
+                              <Play size={10} className="fill-blue-400/25" />
+                              START FOCUS PROTOCOL
                             </button>
                           </div>
                         )}
 
                         {h.type === "exercise" && (
-                          <div className="bg-[#0e0e0e]/40 border border-[#524535]/10 rounded-lg p-2.5 flex items-center gap-3 mt-2">
-                            <div className="relative w-10 h-10 flex-shrink-0">
-                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <circle className="text-[#201f1f] stroke-current" cx="18" cy="18" fill="none" r="16" strokeWidth={3} />
-                                <circle 
-                                  className="text-blue-500 stroke-current" 
-                                  cx="18" 
-                                  cy="18" 
-                                  fill="none" 
-                                  r="16" 
-                                  strokeDasharray="100" 
-                                  strokeDashoffset={100 - Math.min(100, Math.floor((exerciseProgressSec / 1800) * 100))} 
-                                  strokeLinecap="round" 
-                                  strokeWidth={3} 
-                                />
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white">
-                                {Math.min(100, Math.floor((exerciseProgressSec / 1800) * 100))}%
+                          <div className="bg-[#0e0e0e]/40 border border-[#524535]/15 rounded-xl p-3 flex items-center justify-between mt-2 font-mono">
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-8 h-8 flex-shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                  <circle className="text-[#201f1f] stroke-current" cx="18" cy="18" fill="none" r="16" strokeWidth={3} />
+                                  <circle 
+                                    className="text-blue-500 stroke-current animate-pulse" 
+                                    cx="18" 
+                                    cy="18" 
+                                    fill="none" 
+                                    r="16" 
+                                    strokeDasharray="100" 
+                                    strokeDashoffset={100 - Math.min(100, Math.floor((exerciseProgressSec / 1800) * 100))} 
+                                    strokeLinecap="round" 
+                                    strokeWidth={3} 
+                                  />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center text-[8px] font-extrabold text-blue-400">
+                                  {Math.min(100, Math.floor((exerciseProgressSec / 1800) * 100))}%
+                                </div>
+                              </div>
+                              <div className="leading-none space-y-1">
+                                <p className="text-[8px] text-[#d6c3b0]/55 tracking-widest uppercase">ENDURANCE LEVEL</p>
+                                <p className="text-xs font-extrabold text-white">{Math.floor(exerciseProgressSec / 60)} / 30 MIN</p>
                               </div>
                             </div>
-                            <div className="flex-grow">
-                              <p className="text-[8px] text-[#d6c3b0]/50 tracking-wider">PROGRESS</p>
-                              <p className="text-xs font-semibold text-white">{Math.floor(exerciseProgressSec / 60)} / 30</p>
-                            </div>
                             <button 
-                              onClick={handleToggleExerciseSession}
-                              className={`w-8 h-8 rounded-full border flex items-center justify-center active:scale-90 transition-all ${
-                                exercisePlaying 
-                                ? "bg-blue-950/40 border-blue-500 text-blue-400 animate-pulse" 
-                                : "border-white/10 text-gray-400"
-                              }`}
+                              onClick={() => startFocusForCategory("exercise")}
+                              className="px-3.5 py-1.5 rounded bg-blue-500/10 border border-blue-500/20 text-[9px] font-bold text-blue-400 uppercase tracking-widest hover:bg-blue-500/20 hover:text-white transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(59,130,246,0.15)] active:scale-95"
                             >
-                              {exercisePlaying ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
+                              <Play size={10} className="fill-blue-400/25" />
+                              START FOCUS PROTOCOL
                             </button>
                           </div>
                         )}
 
                         {h.type === "intelligence" && (
-                          <div className="bg-[#0e0e0e]/40 border border-white/5 rounded-lg p-3 font-mono text-[10px] mt-2 text-[#d6c3b0] space-y-2">
-                            <div className="flex justify-between">
+                          <div className="bg-[#0e0e0e]/40 border border-white/5 rounded-xl p-3 font-mono text-[10px] mt-2 text-[#d6c3b0] space-y-2">
+                            <div className="flex justify-between items-center">
                               <div>
-                                <p className="text-[8px] text-zinc-500">SESSION</p>
-                                <p className="text-xs text-white tracking-widest">{formatTimerString(sessionSecCount)}</p>
+                                <p className="text-[8px] text-zinc-550 tracking-widest uppercase">INTELLIGENCE LOGS TIME</p>
+                                <p className="text-xs text-white font-extrabold tracking-widest mt-0.5">{formatTimerString(sessionSecCount)} / 2H</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-[8px] text-zinc-500">CLUES</p>
-                                <p className="text-xs text-blue-400 tracking-widest">02 / 05</p>
+                                <p className="text-[8px] text-zinc-550 tracking-widest uppercase">CLUES COLLECTED</p>
+                                <p className="text-xs text-blue-400 font-extrabold tracking-widest mt-0.5">02 / 05</p>
                               </div>
                             </div>
                             <button 
-                              onClick={() => { playSynthSound("tap"); setSessionTimerActive(!sessionTimerActive); }}
-                              className="w-full bg-blue-500/10 border border-blue-500/20 py-1.5 rounded uppercase tracking-wider hover:bg-blue-500/15 text-[9px] font-bold hover:text-white text-blue-400"
+                              onClick={() => startFocusForCategory("intelligence")}
+                              className="w-full bg-blue-500/10 border border-blue-500/20 py-2 rounded-lg font-bold text-blue-400 hover:text-white uppercase tracking-widest font-mono text-[9px] hover:bg-blue-500/15 transition-all flex items-center justify-center gap-1.5 shadow-[0_0_8px_rgba(99,102,241,0.1)] hover:border-blue-500/50"
                             >
-                              {sessionTimerActive ? "PAUSE SESSION" : "START SESSION"}
+                              <Play size={10} className="fill-blue-400/25" />
+                              START FOCUS PROTOCOL
+                            </button>
+                          </div>
+                        )}
+
+                        {h.type === "creativity" && (
+                          <div className="bg-[#0e0e0e]/40 border border-white/5 rounded-xl p-3 font-mono text-[10px] mt-2 text-[#d6c3b0] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="text-[8px] text-zinc-550 tracking-widest uppercase">CREATIVITY TIMELINE</p>
+                                <p className="text-xs text-white font-extrabold tracking-widest mt-0.5">{Math.floor(creativityProgressSec / 60)}M / 60M</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[8px] text-zinc-550 tracking-widest uppercase">SCHE-DRAFT STATUS</p>
+                                <p className="text-xs text-purple-400 font-extrabold tracking-widest mt-0.5">CONCEPT ACTIVE</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => startFocusForCategory("creativity")}
+                              className="w-full bg-blue-500/10 border border-blue-500/20 py-2 rounded-lg font-bold text-blue-400 hover:text-white uppercase tracking-widest font-mono text-[9px] hover:bg-blue-500/15 transition-all flex items-center justify-center gap-1.5 shadow-[0_0_8px_rgba(99,102,241,0.1)] hover:border-blue-500/50"
+                            >
+                              <Play size={10} className="fill-blue-400/25" />
+                              START FOCUS PROTOCOL
                             </button>
                           </div>
                         )}
@@ -3604,135 +3694,201 @@ export default function App() {
                 </motion.div>
             )}
 
+
             {/* TAB 3: FOCUS TIMER PROTOCOL SCREEN */}
-            {activeTab === "protocol" && (
-              <motion.div 
-                key="tab_proto"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6 text-center select-none py-4"
-              >
-                <div className="relative text-center mb-4 space-y-1">
-                  <h1 className="font-headline text-5xl text-blue-500 italic drop-shadow-[0_0_12px_rgba(59,130,246,0.3)]">
-                    Focus Protocol
-                  </h1>
-                  <span className="text-[10px] tracking-widest uppercase text-gray-400 font-mono flex items-center justify-center gap-1.5 leading-none">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block"></span>
-                    Intel Gathering Loop Active
-                  </span>
-                </div>
-
-                {/* Directive Selection Segment Buttons */}
-                <div className="max-w-[420px] mx-auto px-4 space-y-2">
-                  <p className="text-[10px] font-mono tracking-widest text-gray-500 uppercase">
-                    Select Target Operational Directive
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { key: "intelligence", label: "Intelligence", icon: Compass, color: "hover:border-blue-500/40" },
-                      { key: "sleep", label: "Sleep", icon: Moon, color: "hover:border-cyan-500/40" },
-                      { key: "exercise", label: "Exercise", icon: Flame, color: "hover:border-emerald-500/40" }
-                    ].map((item) => {
-                      const IconComp = item.icon;
-                      const isSelected = selectedProtocolType === item.key;
-                      return (
-                        <button
-                          key={item.key}
-                          onClick={() => {
-                            if (timerRunning) {
-                              addToast("⚠️ Can't hot-swap session while the protocol loop is active.", "warn");
-                              return;
-                            }
-                            playSynthSound("tap");
-                            setSelectedProtocolType(item.key as any);
-                          }}
-                          className={`py-3 px-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                            isSelected
-                            ? "bg-blue-600/15 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)] text-white font-bold"
-                            : `bg-black/40 border-white/5 text-gray-500 ${item.color}`
-                          }`}
-                        >
-                          <IconComp size={16} className={isSelected ? "text-blue-400 animate-pulse" : "text-gray-500"} />
-                          <span className="text-[10px] uppercase tracking-wider">{item.label}</span>
-                        </button>
-                      );
-                    })}
+            {activeTab === "protocol" && (() => {
+              const getProtoTheme = () => {
+                switch (selectedProtocolType) {
+                  case "intelligence":
+                    return {
+                      glow: "shadow-[0_0_30px_rgba(59,130,246,0.3)] border-blue-500/30",
+                      text: "text-blue-400 drop-shadow-[0_0_12px_rgba(59,130,246,0.5)]",
+                      orbit: "bg-blue-500 shadow-[0_0_15px_#3b82f6]",
+                      bg: "bg-blue-500/5",
+                      ring: "border-blue-500/10"
+                    };
+                  case "sleep":
+                    return {
+                      glow: "shadow-[0_0_30px_rgba(34,211,238,0.3)] border-cyan-500/30",
+                      text: "text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.5)]",
+                      orbit: "bg-cyan-500 shadow-[0_0_15px_#06b6d4]",
+                      bg: "bg-cyan-500/5",
+                      ring: "border-cyan-500/10"
+                    };
+                  case "exercise":
+                    return {
+                      glow: "shadow-[0_0_30px_rgba(16,185,129,0.3)] border-emerald-500/30",
+                      text: "text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]",
+                      orbit: "bg-emerald-500 shadow-[0_0_15px_#10b981]",
+                      bg: "bg-emerald-500/5",
+                      ring: "border-emerald-500/10"
+                    };
+                  case "creativity":
+                    return {
+                      glow: "shadow-[0_0_30px_rgba(168,85,247,0.3)] border-purple-500/30",
+                      text: "text-purple-400 drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]",
+                      orbit: "bg-purple-500 shadow-[0_0_15px_#a855f7]",
+                      bg: "bg-purple-500/5",
+                      ring: "border-purple-500/10"
+                    };
+                  default:
+                    return {
+                      glow: "shadow-[0_0_30px_rgba(59,130,246,0.3)] border-blue-500/30",
+                      text: "text-blue-400 drop-shadow-[0_0_12px_rgba(59,130,246,0.5)]",
+                      orbit: "bg-blue-500 shadow-[0_0_15px_#3b82f6]",
+                      bg: "bg-blue-500/5",
+                      ring: "border-blue-500/10"
+                    };
+                }
+              };
+              const protoTheme = getProtoTheme();
+              return (
+                <motion.div 
+                  key="tab_proto"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6 text-center select-none py-4"
+                >
+                  <div className="relative text-center mb-4 space-y-1">
+                    <h1 className={`font-headline text-5xl italic transition-all duration-300 ${protoTheme.text}`}>
+                      Focus Protocol
+                    </h1>
+                    <span className="text-[10px] tracking-widest uppercase text-gray-400 font-mono flex items-center justify-center gap-1.5 leading-none">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse inline-block"></span>
+                      Intel Gathering Loop Active
+                    </span>
                   </div>
-                </div>
 
-                {/* Circular Glass Stopwatch display */}
-                <div className="flex items-center justify-center relative my-6">
-                  
-                  {/* Glow circle outlines */}
-                  <div className="relative w-64 h-64 rounded-full border border-white/5 flex items-center justify-center timer-glow group">
-                    
-                    {/* Inner dash circle */}
-                    <div className="absolute inset-4 rounded-full border border-dashed border-white/5"></div>
-                    
-                    {/* Translucent glass circle */}
-                    <div className="absolute inset-0 rounded-full border-[8px] border-white/5 backdrop-blur-sm"></div>
-
-                    {/* Timer figures */}
-                    <div className="text-center relative z-10 space-y-1">
-                      <span className="block font-headline text-5xl md:text-6xl text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.45)]">
-                        {selectedProtocolType === "intelligence" && formatTimerString(sessionSecCount)}
-                        {selectedProtocolType === "exercise" && formatTimerString(exerciseProgressSec)}
-                        {selectedProtocolType === "sleep" && formatTimerString(sleepProgressSec)}
-                      </span>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-blue-400 block font-bold">
-                        {selectedProtocolType === "intelligence" ? "Intelligence Focus Log" : selectedProtocolType === "exercise" ? "Exercise Endurance Log" : "Sleep Cycle Tracker"}
-                      </span>
+                  {/* Directive Selection Segment Buttons */}
+                  <div className="max-w-[420px] mx-auto px-4 space-y-2">
+                    <p className="text-[10px] font-mono tracking-widest text-gray-500 uppercase">
+                      Select Target Operational Directive
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { key: "intelligence", label: "Intelligence", icon: Compass, color: "hover:border-blue-500/40" },
+                        { key: "sleep", label: "Sleep", icon: Moon, color: "hover:border-cyan-500/40" },
+                        { key: "exercise", label: "Exercise", icon: Flame, color: "hover:border-emerald-500/40" },
+                        { key: "creativity", label: "Drawing", icon: Palette, color: "hover:border-purple-500/40" }
+                      ].map((item) => {
+                        const IconComp = item.icon;
+                        const isSelected = selectedProtocolType === item.key;
+                        return (
+                          <button
+                            key={item.key}
+                            onClick={() => {
+                              if (timerRunning) {
+                                addToast("⚠️ Can't hot-swap session while the protocol loop is active.", "warn");
+                                return;
+                              }
+                              playSynthSound("tap");
+                              setSelectedProtocolType(item.key as any);
+                            }}
+                            className={`py-3 px-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                              isSelected
+                              ? selectedProtocolType === "intelligence" 
+                                ? "bg-blue-600/15 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.25)] text-white font-bold"
+                                : selectedProtocolType === "sleep"
+                                  ? "bg-cyan-600/15 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)] text-white font-bold"
+                                  : selectedProtocolType === "exercise"
+                                    ? "bg-emerald-600/15 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.25)] text-white font-bold"
+                                    : "bg-purple-600/15 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] text-white font-bold"
+                              : `bg-black/40 border-white/5 text-gray-500 ${item.color}`
+                            }`}
+                          >
+                            <IconComp size={16} className={isSelected ? selectedProtocolType === "intelligence" ? "text-blue-400 animate-pulse" : selectedProtocolType === "sleep" ? "text-cyan-400 animate-pulse" : selectedProtocolType === "exercise" ? "text-emerald-400 animate-pulse" : "text-purple-400 animate-pulse" : "text-gray-500"} />
+                            <span className="text-[10px] uppercase tracking-wider">{item.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
+                  </div>
 
-                    {/* Orbiting element mimicking scanning signal */}
-                    <motion.div 
-                      animate={timerRunning ? { rotate: 360 } : {}}
-                      transition={timerRunning ? { repeat: Infinity, duration: 6, ease: "linear" } : {}}
-                      className="absolute inset-0 rounded-full border border-transparent"
+                  {/* Circular Glass Stopwatch display */}
+                  <div className="flex items-center justify-center relative my-6">
+                    
+                    {/* Glowing outer rings for futuristic HUD visuals */}
+                    <div className="absolute w-[280px] h-[280px] rounded-full border border-white/[0.02] pointer-events-none"></div>
+                    <div className="absolute w-[300px] h-[300px] rounded-full border border-dashed border-white/[0.01] pointer-events-none"></div>
+                    {timerRunning && (
+                      <>
+                        <div className={`absolute inset-[-12px] rounded-full border ${protoTheme.ring} animate-[ping_3s_infinite] pointer-events-none`}></div>
+                        <div className={`absolute inset-[-24px] rounded-full border ${protoTheme.ring} opacity-50 animate-[ping_4s_infinite_1.5s] pointer-events-none`}></div>
+                      </>
+                    )}
+
+                    {/* Glow circle outlines */}
+                    <div className={`relative w-64 h-64 rounded-full border flex items-center justify-center transition-all duration-500 group ${protoTheme.glow} ${protoTheme.bg}`}>
+                      
+                      {/* Inner dash circle */}
+                      <div className="absolute inset-4 rounded-full border border-dashed border-white/5"></div>
+                      
+                      {/* Translucent glass circle */}
+                      <div className="absolute inset-0 rounded-full border-[8px] border-white/5 backdrop-blur-sm"></div>
+
+                      {/* Timer figures */}
+                      <div className="text-center relative z-10 space-y-1">
+                        <span className="block font-headline text-5xl md:text-6xl text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.45)]">
+                          {selectedProtocolType === "intelligence" && formatTimerString(sessionSecCount)}
+                          {selectedProtocolType === "exercise" && formatTimerString(exerciseProgressSec)}
+                          {selectedProtocolType === "sleep" && formatTimerString(sleepProgressSec)}
+                          {selectedProtocolType === "creativity" && formatTimerString(creativityProgressSec)}
+                        </span>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-blue-400 block font-bold transition-all duration-300">
+                          {selectedProtocolType === "intelligence" ? "Intelligence Focus Log" : selectedProtocolType === "exercise" ? "Exercise Endurance Log" : selectedProtocolType === "sleep" ? "Sleep Cycle Tracker" : "Creativity Drafting Log"}
+                        </span>
+                      </div>
+
+                      {/* Orbiting element mimicking scanning signal */}
+                      <motion.div 
+                        animate={timerRunning ? { rotate: 360 } : {}}
+                        transition={timerRunning ? { repeat: Infinity, duration: 6, ease: "linear" } : {}}
+                        className="absolute inset-0 rounded-full border border-transparent"
+                      >
+                        <div className={`absolute top-1/2 left-[-5px] -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-all duration-300 ${protoTheme.orbit}`}></div>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* Brief stat telemetry card */}
+                  <div className="px-6 py-4 rounded-2xl bg-[#111111] border border-white/5 flex justify-around items-center max-w-[340px] mx-auto shadow-2xl">
+                    <div className="text-left leading-none">
+                      <span className="text-[8.5px] font-bold text-gray-500 uppercase tracking-widest font-mono">EST TARGET PROGRESS</span>
+                      <p className="text-white font-extrabold text-[13px] mt-1.5 uppercase font-mono tracking-wider">
+                        {selectedProtocolType === "intelligence" ? "2h 00m Target" : selectedProtocolType === "exercise" ? "30m Target" : selectedProtocolType === "sleep" ? "7h 00m Target" : "1h 00m Target"}
+                      </p>
+                    </div>
+                    <div className="h-6 w-[1px] bg-white/10"></div>
+                    <div className="text-left leading-none">
+                      <span className="text-[8.5px] font-bold text-gray-500 uppercase tracking-widest font-mono">SESSION ELAPSED</span>
+                      <p className="text-blue-400 font-extrabold text-[13px] mt-1.5 font-mono animate-pulse">
+                        {timerRunning ? formatTimerString(focusedSeconds) : "00:00 (IDLE)"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Big tactical start focus switch button */}
+                  <div className="max-w-[280px] mx-auto mt-4">
+                    <motion.button 
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleToggleTimer}
+                      className={`w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all uppercase duration-150 tracking-wider text-xs ${
+                        timerRunning 
+                        ? "bg-red-950/60 border border-red-600/30 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.25)]" 
+                        : "bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+                      }`}
                     >
-                      <div className="absolute top-1/2 left-[-5px] -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-blue-500 shadow-[0_0_15px_#3b82f6]"></div>
-                    </motion.div>
-                  </div>
-                </div>
-
-                {/* Brief stat telemetry card */}
-                <div className="px-6 py-4 rounded-2xl bg-[#111111] border border-white/5 flex justify-around items-center max-w-[340px] mx-auto shadow-2xl">
-                  <div className="text-left leading-none">
-                    <span className="text-[8.5px] font-bold text-gray-500 uppercase tracking-widest font-mono font-bold">EST TARGET PROGRESS</span>
-                    <p className="text-white font-extrabold text-[13px] mt-1.5 uppercase font-mono tracking-wider font-bold">
-                      {selectedProtocolType === "intelligence" ? "2h 00m Target" : selectedProtocolType === "exercise" ? "30m Target" : "7h 00m Target"}
+                      <Power size={16} className={`${timerRunning ? "animate-spin text-red-400" : ""}`} />
+                      {timerRunning ? "SUSPEND PROTOCOL" : "START FOCUS PROTOCOL"}
+                    </motion.button>
+                    <p className="text-center mt-3 text-[9px] text-gray-600 italic">
+                      Unauthorized terminal termination will alter historical logs database records.
                     </p>
                   </div>
-                  <div className="h-6 w-[1px] bg-white/10"></div>
-                  <div className="text-left leading-none">
-                    <span className="text-[8.5px] font-bold text-gray-500 uppercase tracking-widest font-mono font-bold">SESSION ELAPSED</span>
-                    <p className="text-blue-400 font-extrabold text-[13px] mt-1.5 font-mono font-bold animate-pulse">
-                      {timerRunning ? formatTimerString(focusedSeconds) : "00:00 (IDLE)"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Big tactical start focus switch button */}
-                <div className="max-w-[280px] mx-auto mt-4">
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleToggleTimer}
-                    className={`w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all uppercase duration-150 tracking-wider text-xs ${
-                      timerRunning 
-                      ? "bg-red-950/60 border border-red-600/30 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.25)]" 
-                      : "bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.35)]"
-                    }`}
-                  >
-                    <Power size={16} className={`${timerRunning ? "animate-spin text-red-400" : ""}`} />
-                    {timerRunning ? "SUSPEND PROTOCOL" : "START FOCUS PROTOCOL"}
-                  </motion.button>
-                  <p className="text-center mt-3 text-[9px] text-gray-600 italic">
-                    Unauthorized terminal termination will alter historical logs database records.
-                  </p>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              );
+            })()}
 
             {/* TAB 4: SHOP ACQUISITIONS */}
             {activeTab === "shop" && (
