@@ -4340,15 +4340,15 @@ export default function App() {
                         const rare = ["item_arctic", "item_goggles", "item_lens", "item_jammer", "item_claw", "item_hoodcap", "item_wrist", "item_satchel"];
                         
                         if (legendary.includes(itemId)) {
-                          return { name: "LEGENDARY", color: "text-amber-400 border-amber-500/30 bg-amber-500/5", glow: "shadow-[0_0_12px_rgba(245,158,11,0.2)]", ring: "border-amber-500/20" };
+                          return { name: "LEGENDARY", color: "text-amber-400 border-amber-500/40 bg-amber-500/10", glow: "shadow-[0_0_15px_rgba(245,158,11,0.3)]", ring: "border-amber-500/30" };
                         }
                         if (epic.includes(itemId)) {
-                          return { name: "EPIC", color: "text-purple-400 border-purple-500/30 bg-purple-500/5", glow: "shadow-[0_0_12px_rgba(168,85,247,0.15)]", ring: "border-purple-500/20" };
+                          return { name: "EPIC", color: "text-purple-400 border-purple-500/40 bg-purple-500/10", glow: "shadow-[0_0_15px_rgba(168,85,247,0.25)]", ring: "border-purple-500/35" };
                         }
                         if (rare.includes(itemId)) {
-                          return { name: "RARE", color: "text-sky-400 border-sky-500/30 bg-sky-500/5", glow: "shadow-[0_0_12px_rgba(14,165,233,0.12)]", ring: "border-sky-500/20" };
+                          return { name: "RARE", color: "text-sky-400 border-sky-500/40 bg-sky-500/10", glow: "shadow-[0_0_15px_rgba(14,165,233,0.2)]", ring: "border-sky-500/30" };
                         }
-                        return { name: "COMMON", color: "text-slate-400 border-slate-600/30 bg-slate-600/5", glow: "", ring: "border-slate-800" };
+                        return { name: "COMMON", color: "text-slate-400 border-[#1a3854]/40 bg-slate-600/5", glow: "", ring: "border-[#112d47]" };
                       };
 
                       const isItemLockedByBoss = (itemId: string) => {
@@ -4367,10 +4367,33 @@ export default function App() {
                         const rarity = getItemRarity(item.id);
                         const bossLockMessage = isItemLockedByBoss(item.id);
 
+                        // High fidelity color palettes
+                        let ambientGlowColor = "bg-slate-500/10";
+                        let borderGradient = "border-[#112d47]";
+                        
+                        if (equipped) {
+                          ambientGlowColor = "bg-emerald-500/25";
+                          borderGradient = "border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)]";
+                        } else if (bossLockMessage) {
+                          ambientGlowColor = "bg-red-950/20";
+                          borderGradient = "border-red-950/60 opacity-50 cursor-not-allowed";
+                        } else if (rarity.name === "LEGENDARY") {
+                          ambientGlowColor = "bg-amber-500/20";
+                          borderGradient = "border-amber-500/30 hover:border-amber-400 hover:shadow-[0_0_24px_rgba(245,158,11,0.25)]";
+                        } else if (rarity.name === "EPIC") {
+                          ambientGlowColor = "bg-purple-500/20";
+                          borderGradient = "border-purple-500/30 hover:border-purple-400 hover:shadow-[0_0_24px_rgba(168,85,247,0.22)]";
+                        } else if (rarity.name === "RARE") {
+                          ambientGlowColor = "bg-sky-500/20";
+                          borderGradient = "border-sky-500/30 hover:border-sky-400 hover:shadow-[0_0_24px_rgba(14,165,233,0.18)]";
+                        } else {
+                          borderGradient = "border-[#142f4c] hover:border-cyan-500/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]";
+                        }
+
                         return (
                           <motion.div
                             key={item.id}
-                            whileHover={!bossLockMessage ? { y: -4, scale: 1.02 } : {}}
+                            whileHover={!bossLockMessage ? { y: -6, scale: 1.025 } : {}}
                             whileTap={!bossLockMessage ? { scale: 0.98 } : {}}
                             onClick={() => {
                               if (bossLockMessage) {
@@ -4384,116 +4407,129 @@ export default function App() {
                                 handleAcquireShopItem(item);
                               }
                             }}
-                            className={`group flex flex-col justify-between p-3 rounded-xl border-2 transition-all duration-300 relative select-none cursor-pointer ${
+                            className={`group flex flex-col justify-between p-4 rounded-xl border-2 transition-all duration-300 relative select-none cursor-pointer overflow-hidden ${
                               equipped 
-                                ? "bg-[#041212]/95 border-[#10b981] shadow-[0_0_20px_rgba(16,185,129,0.25)]" 
+                                ? "bg-gradient-to-b from-[#06181b]/98 to-[#02070c]/98" 
                                 : bossLockMessage
-                                  ? "bg-[#02050c]/95 border-red-950/60 opacity-45 cursor-not-allowed"
+                                  ? "bg-[#010307]/90"
                                   : owned 
-                                    ? "bg-[#030814]/95 border-cyan-950 hover:border-[#00cbff]/50 hover:shadow-[0_0_15px_rgba(0,203,255,0.15)]"
-                                    : "bg-[#010408]/95 border-zinc-900/60 hover:border-cyan-500/20 hover:shadow-[0_0_10px_rgba(6,182,212,0.05)]"
-                            }`}
+                                    ? "bg-gradient-to-b from-[#051122]/98 to-[#02050c]/98"
+                                    : "bg-gradient-to-b from-[#030913]/98 to-[#010307]/98"
+                            } ${borderGradient}`}
                           >
-                            {/* Reticle corners */}
-                            <div className="absolute top-1 left-1 w-2.5 h-2.5 border-t border-l border-zinc-700/60 pointer-events-none"></div>
-                            <div className="absolute top-1 right-1 w-2.5 h-2.5 border-t border-r border-zinc-700/60 pointer-events-none"></div>
-                            <div className="absolute bottom-1 left-1 w-2.5 h-2.5 border-b border-l border-zinc-700/60 pointer-events-none"></div>
-                            <div className="absolute bottom-1 right-1 w-2.5 h-2.5 border-b border-r border-zinc-700/60 pointer-events-none"></div>
+                            {/* Technical Corner crosshair details */}
+                            <div className="absolute top-1.5 left-1.5 w-2.5 h-2.5 border-t border-l border-cyan-500/30 pointer-events-none group-hover:border-cyan-400/70 transition-colors"></div>
+                            <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 border-t border-r border-cyan-500/30 pointer-events-none group-hover:border-cyan-400/70 transition-colors"></div>
+                            <div className="absolute bottom-1.5 left-1.5 w-2.5 h-2.5 border-b border-l border-cyan-500/30 pointer-events-none group-hover:border-cyan-400/70 transition-colors"></div>
+                            <div className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 border-b border-r border-cyan-500/30 pointer-events-none group-hover:border-cyan-400/70 transition-colors"></div>
 
-                            {/* Rarity color bar indicator on top */}
-                            <div className={`absolute top-0 inset-x-0 h-[3px] ${
-                              equipped ? "bg-[#10b981]" : bossLockMessage ? "bg-red-800" : 
-                              rarity.name === "LEGENDARY" ? "bg-amber-500 animate-pulse" :
-                              rarity.name === "EPIC" ? "bg-purple-500" :
-                              rarity.name === "RARE" ? "bg-sky-500" : "bg-slate-700"
+                            {/* Neon Header rarity bar */}
+                            <div className={`absolute top-0 inset-x-0 h-[4px] ${
+                              equipped ? "bg-gradient-to-r from-emerald-500 to-teal-400" : bossLockMessage ? "bg-red-800" : 
+                              rarity.name === "LEGENDARY" ? "bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-500 animate-pulse" :
+                              rarity.name === "EPIC" ? "bg-gradient-to-r from-purple-500 to-fuchsia-400" :
+                              rarity.name === "RARE" ? "bg-gradient-to-r from-sky-500 to-cyan-400" : "bg-slate-750"
                             }`}></div>
 
-                            {/* Custom Card Preview Box */}
-                            <div className="aspect-[4/3] w-full bg-slate-950/80 border border-slate-900 rounded-lg flex items-center justify-center p-2 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-500/25 shadow-[inset_0_0_12px_rgba(0,0,0,0.85)]">
-                              <span className="absolute top-1 left-1.5 text-[6.5px] text-zinc-650 font-mono tracking-tighter select-none">
+                            {/* Custom Card Preview Box - Takes 60-70% of the space visually */}
+                            <div className="aspect-[4/5] w-full bg-[#01050c]/95 border border-[#112d47] rounded-lg flex items-center justify-center p-3 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-500/45 shadow-[inset_0_0_24px_rgba(0,0,0,0.95)]">
+                              <span className="absolute top-2 left-2 text-[8px] text-zinc-500 font-mono tracking-widest font-black uppercase select-none opacity-85">
                                 REF_#{item.id.replace("item_", "").toUpperCase()}
                               </span>
-                              <span className="absolute top-1 right-1.5 text-[6.5px] text-zinc-650 font-mono tracking-tighter select-none">
-                                RANK.{rarity.name[0]}
+                              <span className="absolute top-2 right-2 text-[8px] text-zinc-500 font-mono tracking-widest font-black uppercase select-none opacity-85">
+                                RANK.{rarity.name[0]}L
                               </span>
 
-                              {/* Glowing scanline filter */}
+                              {/* Heavy Ambient Backlighting Behind Character */}
+                              <div className={`absolute w-36 h-36 rounded-full pointer-events-none blur-3xl opacity-40 transition-all duration-300 group-hover:scale-110 group-hover:opacity-60 ${ambientGlowColor}`}></div>
+
+                              {/* Scanning Holographic Laser Overlay */}
                               {equipped && (
-                                <div className="absolute inset-0 bg-gradient-to-b from-[#10b981]/8 to-transparent h-[40%] w-full pointer-events-none animate-[scan_2.5s_linear_infinite]"></div>
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#10b981]/12 to-transparent h-[45%] w-full pointer-events-none animate-[scan_2.2s_linear_infinite]"></div>
                               )}
 
-                              {/* Clean sci-fi graph background grids */}
-                              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.015)_1px,transparent_1px)] bg-[size:7px_7px] pointer-events-none"></div>
+                              {/* Micro scale sci-fi grids */}
+                              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.025)_1px,transparent_1px)] bg-[size:8px_8px] pointer-events-none opacity-90"></div>
 
-                              {/* Live customized rodent avatar */}
-                              <div className={`transition-transform duration-300 ${!bossLockMessage ? "group-hover:scale-105" : "scale-95 filter saturate-50 brightness-50"}`}>
+                              {/* Interactive HUD Marks */}
+                              <div className="absolute top-[20%] left-[8%] w-3 h-3 border-t border-l border-cyan-500/15 pointer-events-none group-hover:border-cyan-400/40"></div>
+                              <div className="absolute top-[20%] right-[8%] w-3 h-3 border-t border-r border-cyan-500/15 pointer-events-none group-hover:border-cyan-400/40"></div>
+                              <div className="absolute bottom-[20%] left-[8%] w-3 h-3 border-b border-l border-cyan-500/15 pointer-events-none group-hover:border-cyan-400/40"></div>
+                              <div className="absolute bottom-[20%] right-[8%] w-3 h-3 border-b border-r border-cyan-500/15 pointer-events-none group-hover:border-cyan-400/40"></div>
+
+                              {/* HUGE centering render container for Rodent avatar */}
+                              <div className={`w-full h-full max-w-[170px] max-h-[170px] sm:max-w-[190px] sm:max-h-[190px] flex items-center justify-center transition-all duration-500 z-10 ${
+                                !bossLockMessage 
+                                  ? "filter drop-shadow-[0_0_15px_rgba(6,182,212,0.22)] group-hover:scale-[1.12] group-hover:rotate-1" 
+                                  : "scale-95 filter saturate-20 brightness-35"
+                              }`}>
                                 <RodentAvatar
-                                  size={68}
-                                  coat={item.category === "coats" ? item.id : null}
-                                  goggles={item.category === "goggles" ? item.id : null}
-                                  tail={item.category === "tails" ? item.id : null}
-                                  hat={item.category === "hats" ? item.id : null}
-                                  utility={item.category === "utility" ? item.id : null}
-                                  className="drop-shadow-[0_0_8px_rgba(255,255,255,0.05)]"
+                                  size="100%"
+                                  coat={item.category === "coats" ? item.id : (equippedItemIds.find(id => initialShopItems.find(x => x.id === id)?.category === "coats") || null)}
+                                  goggles={item.category === "goggles" ? item.id : (equippedItemIds.find(id => initialShopItems.find(x => x.id === id)?.category === "goggles") || null)}
+                                  tail={item.category === "tails" ? item.id : (equippedItemIds.find(id => initialShopItems.find(x => x.id === id)?.category === "tails") || null)}
+                                  hat={item.category === "hats" ? item.id : (equippedItemIds.find(id => initialShopItems.find(x => x.id === id)?.category === "hats") || null)}
+                                  utility={item.category === "utility" ? item.id : (equippedItemIds.find(id => initialShopItems.find(x => x.id === id)?.category === "utility") || null)}
+                                  className="w-full h-full transition-transform"
                                 />
                               </div>
 
                               {/* Overlay for dynamically locked items */}
                               {bossLockMessage && (
-                                <div className="absolute inset-0 bg-black/92 backdrop-blur-[0.5px] flex flex-col items-center justify-center p-2 z-10 text-center">
-                                  <div className="p-1.5 rounded bg-red-950/20 border border-red-900/30">
-                                    <Lock size={12} className="text-red-500 animate-pulse stroke-[2.5]" />
+                                <div className="absolute inset-0 bg-black/94 backdrop-blur-[1px] flex flex-col items-center justify-center p-3 z-20 text-center">
+                                  <div className="p-2.5 rounded bg-red-950/20 border border-red-900/40 animate-pulse">
+                                    <Lock size={16} className="text-red-500 stroke-[2.5]" />
                                   </div>
-                                  <span className="text-[7px] font-mono text-red-500 font-extrabold tracking-widest uppercase mt-1">
-                                    RESTRICTED DATA
+                                  <span className="text-[9px] font-mono text-red-500 font-extrabold tracking-widest uppercase mt-2 shadow-[0_0_8px_rgba(239,68,68,0.2)]">
+                                    CLASSIFIED CLUSTER
                                   </span>
-                                  <span className="text-[6.5px] text-zinc-500 font-bold uppercase mt-0.5 max-w-[90%] leading-none text-wrap">
+                                  <span className="text-[7.5px] text-zinc-400 font-bold uppercase mt-1.5 max-w-[85%] leading-normal text-wrap border-t border-red-500/15 pt-1.5">
                                     {bossLockMessage}
                                   </span>
                                 </div>
                               )}
                             </div>
 
-                            {/* Text labels and price indicator */}
-                            <div className="mt-3 flex flex-col items-center flex-grow justify-between space-y-2">
-                              <div className="space-y-1 w-full text-center">
-                                <h4 className="text-[10.5px] font-black tracking-wider uppercase text-zinc-100 group-hover:text-[#00cbff] transition-colors leading-tight font-sans">
+                            {/* Tactical description, labels and action controllers */}
+                            <div className="mt-4 flex flex-col justify-between flex-grow space-y-3">
+                              <div className="space-y-1.5 w-full text-center">
+                                <h4 className="text-sm sm:text-base font-black tracking-widest uppercase text-zinc-100 group-hover:text-[#00cbff] transition-colors leading-tight font-sans">
                                   {item.title}
                                 </h4>
                                 
-                                <div className="flex items-center justify-center gap-1.5">
-                                  <span className={`text-[7px] font-extrabold tracking-widest px-1.5 py-0.5 rounded border border-white/5 font-mono leading-none ${rarity.color} ${rarity.glow}`}>
+                                <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                                  <span className={`text-[8px] font-extrabold tracking-widest px-2 py-0.5 rounded border font-mono leading-none uppercase ${rarity.color} ${rarity.glow}`}>
                                     {rarity.name}
                                   </span>
-                                  <span className="text-[7px] font-bold text-zinc-550 bg-zinc-950/50 border border-zinc-900 px-1 py-0.5 rounded leading-none">
+                                  <span className="text-[8px] font-extrabold text-[#00cbff] bg-[#00cbff]/5 border border-[#00cbff]/20 px-1.5 py-0.5 rounded leading-none font-mono uppercase tracking-widest whitespace-nowrap">
                                     {item.category.toUpperCase()}
                                   </span>
                                 </div>
 
-                                <p className="text-[8px] text-zinc-400 font-semibold leading-normal mt-2 select-none h-9 overflow-hidden">
+                                <p className="text-[10px] text-zinc-300 font-medium leading-relaxed mt-2 select-none h-11 overflow-hidden font-sans border-t border-[#102a3f]/40 pt-1.5">
                                   {item.description}
                                 </p>
                               </div>
 
-                              {/* Interactive activation indicator button strip */}
-                              <div className="w-full pt-2 border-t border-zinc-900 flex items-center justify-center">
+                              {/* Tactical buttons & credit price tag displays */}
+                              <div className="w-full pt-3 border-t border-[#102a3f]/30 flex items-center justify-center">
                                 {equipped ? (
-                                  <div className="w-full py-1 rounded bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.15)]">
-                                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
-                                    <span className="text-[7.5px] font-black text-[#10b981] tracking-wider uppercase font-mono leading-none">
-                                      EQUIPPED
+                                  <div className="w-full py-2 rounded bg-emerald-500/10 border border-emerald-500/45 flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span className="text-[9px] font-black font-mono text-[#10b981] tracking-widest uppercase leading-none">
+                                      IN DEPLOYMENT
                                     </span>
                                   </div>
                                 ) : owned ? (
-                                  <div className="w-full py-1 rounded bg-cyan-950/20 hover:bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center cursor-pointer group-hover:border-[#00cbff]/50 transition-colors">
-                                    <span className="text-[7.5px] font-black text-cyan-400 tracking-wider uppercase font-mono leading-none">
-                                      EQUIP MODULE
+                                  <div className="w-full py-2 rounded bg-cyan-950/40 hover:bg-cyan-500/20 border border-cyan-500/45 flex items-center justify-center cursor-pointer group-hover:border-[#00cbff]/85 transition-all duration-300 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                                    <span className="text-[9px] font-black font-mono text-cyan-400 tracking-widest uppercase leading-none group-hover:text-cyan-200">
+                                      MOUNT PIECE
                                     </span>
                                   </div>
                                 ) : (
-                                  <div className="w-full py-1 rounded bg-[#0b0805] hover:bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/40 flex items-center justify-center gap-1.5 transition-all duration-200">
-                                    <span className="text-[9px] font-black font-mono text-amber-500 flex items-center gap-0.5 leading-none">
-                                      🔸 {item.cost} <span className="text-[7px] text-zinc-650">CR</span>
+                                  <div className="w-full py-2 rounded bg-gradient-to-r from-amber-600/10 to-amber-500/5 hover:from-amber-550/20 hover:to-amber-500/10 border border-amber-500/35 hover:border-amber-500/75 flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_0_8px_rgba(245,158,11,0.05)] cursor-pointer">
+                                    <span className="text-xs font-black font-mono text-amber-400 flex items-center gap-1 leading-none tracking-wider">
+                                      🔸 {item.cost} <span className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">CR</span>
                                     </span>
                                   </div>
                                 )}
@@ -4504,65 +4540,66 @@ export default function App() {
                       };
 
                       return (
-                        <div className="space-y-10">
-                          {/* Sequential display of first 3 primary horizontal categories */}
+                        <div className="space-y-12">
+                          {/* Sequential display of first 3 primary horizontal categories with MUCH wider columns */}
                           {[
-                            { id: "coats", name: "Coats & Outfits", icon: "🧥" },
-                            { id: "goggles", name: "Goggles & Face Accessories", icon: "🕶️" },
-                            { id: "tails", name: "Tail Upgrades", icon: "🧬" }
+                            { id: "coats", name: "Tactical Coats & Outfits", icon: "🧥" },
+                            { id: "goggles", name: "Combat Optics & Face Protection", icon: "🕶️" },
+                            { id: "tails", name: "Chassis & Tail Reinforcements", icon: "🧬" }
                           ].map((categoryItem) => {
                             const filtered = initialShopItems.filter((item) => item.category === categoryItem.id);
-                            const columnsCount = categoryItem.id === "tails" ? "grid-cols-2 md:grid-cols-5" : "grid-cols-2 md:grid-cols-6";
+                            // REDESIGNED: Maximum 3 columns wide on large desktop grids to make EACH CARD exceptionally wide, taller and cinematic!
+                            const columnsCount = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8";
                             
                             return (
-                              <section key={categoryItem.id} id={`sec_${categoryItem.id}`} className="space-y-4 scroll-mt-6">
+                              <section key={categoryItem.id} id={`sec_${categoryItem.id}`} className="space-y-6 scroll-mt-6">
                                 {/* Sleek Cyberpunk Header with cap indicator and gradient separator */}
-                                <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
-                                  <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
-                                  <span className="text-xs font-black text-[#00cbff]">{categoryItem.icon}</span>
-                                  <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
+                                <div className="flex items-center gap-3 border-b-2 border-dashed border-[#0d283c]/60 pb-3">
+                                  <div className="w-1.5 h-5 bg-[#00cbff] shadow-[0_0_12px_rgba(0,203,255,0.8)] rounded-sm"></div>
+                                  <span className="text-sm font-black text-[#00cbff]">{categoryItem.icon}</span>
+                                  <h3 className="text-xs sm:text-sm font-black tracking-widest text-[#00cbff] uppercase font-mono">
                                     {categoryItem.name}
                                   </h3>
                                   <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
                                 </div>
 
-                                <div className={`grid ${columnsCount} gap-4`}>
+                                <div className={`grid ${columnsCount}`}>
                                   {filtered.map(renderItemCard)}
                                 </div>
                               </section>
                             );
                           })}
 
-                          {/* Dual columns split screen layout for Hats and Utilities matching reference layout */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2">
+                          {/* Dual columns split screen layout for Hats and Utilities with clean wide column proportions */}
+                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12 pt-4">
                             {/* Left Column: Hats */}
-                            <section id="sec_hats" className="space-y-4 scroll-mt-6">
-                              <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
-                                <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
-                                <span className="text-xs font-black text-[#00cbff]">🎩</span>
-                                <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
-                                  Hats
+                            <section id="sec_hats" className="space-y-6 scroll-mt-6">
+                              <div className="flex items-center gap-3 border-b-2 border-dashed border-[#0d283c]/60 pb-3">
+                                <div className="w-1.5 h-5 bg-[#00cbff] shadow-[0_0_12px_rgba(0,203,255,0.8)] rounded-sm"></div>
+                                <span className="text-sm font-black text-[#00cbff]">🎩</span>
+                                <h3 className="text-xs sm:text-sm font-black tracking-widest text-[#00cbff] uppercase font-mono">
+                                  Tactical Headgear Specs
                                 </h3>
                                 <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
                               </div>
 
-                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                                 {initialShopItems.filter((i) => i.category === "hats").map(renderItemCard)}
                               </div>
                             </section>
 
                             {/* Right Column: Utilities */}
-                            <section id="sec_utility" className="space-y-4 scroll-mt-6">
-                              <div className="flex items-center gap-2.5 border-b border-[#0d283c]/60 pb-2">
-                                <div className="w-1 h-4 bg-[#00cbff] opacity-80 rounded-sm"></div>
-                                <span className="text-xs font-black text-[#00cbff]">💼</span>
-                                <h3 className="text-xs font-black tracking-widest text-[#00cbff] uppercase">
-                                  Utility Accessories
+                            <section id="sec_utility" className="space-y-6 scroll-mt-6">
+                              <div className="flex items-center gap-3 border-b-2 border-dashed border-[#0d283c]/60 pb-3">
+                                <div className="w-1.5 h-5 bg-[#00cbff] shadow-[0_0_12px_rgba(0,203,255,0.8)] rounded-sm"></div>
+                                <span className="text-sm font-black text-[#00cbff]">💼</span>
+                                <h3 className="text-xs sm:text-sm font-black tracking-widest text-[#00cbff] uppercase font-mono">
+                                  Utility Tech Accessories
                                 </h3>
                                 <div className="flex-grow h-[1px] bg-gradient-to-r from-[#0d283c]/50 to-transparent"></div>
                               </div>
 
-                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                                 {initialShopItems.filter((i) => i.category === "utility").map(renderItemCard)}
                               </div>
                             </section>
